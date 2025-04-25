@@ -1,55 +1,121 @@
-import { calculateSequestration, calculateCost, calculateBiodiversity, calculateBeneficiaries } from './forestCalcs.js';
-import { setupForm, validateForm, displayResults, handleError } from './forestDOM.js';
-import { uploadSpeciesFile, parseData, exportResults } from './forestIO.js';
+/**
+ * Forest Main Module
+ * Entry point for the Forest calculator
+ */
 
-class ForestCalculatorManager {
-    constructor() {
-        this.form = document.getElementById('forest-form');
-        this.resultsContainer = document.getElementById('forest-results');
-        this.exportButton = document.getElementById('forest-export-btn');
-        this.lastCalculatedResults = null;
-    }
+// Store last calculation results
+let lastResults = null;
 
-    init() {
-        setupForm(this.form);
-        this.form.addEventListener('submit', (event) => this.handleFormSubmit(event));
-        this.exportButton.addEventListener('click', () => this.handleExport());
-    }
-
-    handleFormSubmit(event) {
-        event.preventDefault();
-        if (validateForm(this.form)) {
-            try {
-                const data = parseData(this.form);
-                this.lastCalculatedResults = this.calculateResults(data);
-                displayResults(this.resultsContainer, this.lastCalculatedResults);
-            } catch (error) {
-                handleError(this.resultsContainer, error);
-            }
-        }
-    }
-
-    calculateResults(data) {
-        const sequestration = calculateSequestration(data);
-        const cost = calculateCost(data);
-        const biodiversity = calculateBiodiversity(data);
-        const beneficiaries = calculateBeneficiaries(data);
-        return { sequestration, cost, biodiversity, beneficiaries };
-    }
-
-    handleExport() {
-        if (this.lastCalculatedResults) {
-            exportResults(this.lastCalculatedResults);
-        } else {
-            alert('No results to export.');
-        }
-    }
-}
-
+/**
+ * Initialize the Forest calculator
+ * @returns {Object} - Forest calculator interface
+ */
 function initForestCalculator() {
-    const calculator = new ForestCalculatorManager();
-    calculator.init();
-    return calculator;
+    console.log('Initializing Forest Calculator');
+    
+    // Initialize modules
+    if (window.forestDOM) {
+        window.forestDOM.init();
+    }
+    
+    if (window.forestIO) {
+        window.forestIO.init();
+    }
+    
+    if (window.forestListHandlers) {
+        window.forestListHandlers.init();
+    }
+    
+    // Return interface for external access
+    return {
+        name: 'Forest Calculator',
+        calculateForest,
+        resetForest,
+        getLastResults
+    };
 }
 
-window.initForestCalculator = initForestCalculator;
+/**
+ * Calculate forest sequestration
+ * @param {Object} formData - Form data object
+ */
+function calculateForest(formData) {
+    try {
+        // Check if we have species data for multi-species mode
+        const speciesData = window.forestIO?.getLoadedSpeciesData();
+        const isMultiSpeciesMode = window.forestIO?.isMultiSpeciesMode();
+        
+        // Perform calculation
+        let results;
+        if (isMultiSpeciesMode && speciesData) {
+            results = window.forestCalcs.calculateSequestrationMultiSpecies(formData, speciesData);
+        } else {
+            results = window.forestCalcs.calculateSequestration(formData);
+        }
+        
+        // Store results
+        lastResults = results;
+        
+        // Calculate cost analysis
+        const costAnalysis = window.forestCalcs.calculateForestCostAnalysis(
+            formData.projectCost,
+            formData.area,
+            results
+        );
+        
+        // Trigger results event for UI update
+        window.forestCalcs.eventSystem.onResults(results);
+        
+        // Update cost analysis
+        if (window.forestDOM) {
+            window.forestDOM.updateCostAnalysis(costAnalysis);
+            
+            // Get carbon price from form data
+            const carbonPrice = formData.carbonPrice || 5;
+            window.forestDOM.updateCarbonCredits(results.summary.totalCO2e, carbonPrice);
+        }
+        
+        // Update enhanced features
+        if (window.forestEnhanced) {
+            window.forestEnhanced.updateAllEnhancedFeatures(formData, results, speciesData);
+        }
+        
+        // Track calculation in analytics
+        if (window.analytics) {
+            window.analytics.trackCalculation('Forest', formData, results.summary);
+        }
+        
+        return results;
+    } catch (error) {
+        console.error('Error calculating forest sequestration:', error);
+        window.forestCalcs.eventSystem.showError(`Calculation error: ${error.message}`, null);
+        return null;
+    }
+}
+
+/**
+ * Reset the forest calculator
+ */
+function resetForest() {
+    // Reset results
+    lastResults = null;
+    
+    // Trigger reset event
+    window.forestCalcs.eventSystem.onReset();
+}
+
+/**
+ * Get the last calculation results
+ * @returns {Object|null} - Last calculation results or null if none
+ */
+function getLastResults() {
+    return lastResults;
+}
+
+// Register forest calculator globally
+window.forestMain = {
+    init: initForestCalculator,
+    calculateForest,
+    resetForest,
+    getLastResults
+};

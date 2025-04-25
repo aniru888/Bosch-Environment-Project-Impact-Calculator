@@ -1,100 +1,99 @@
 /**
- * Common utility functions for the application
+ * Common utility functions for the A/R Project Impact Calculator
  */
 
-/**
- * Function to download CSV file
- * @param {string} filename - The name of the file to be downloaded
- * @param {string} content - The content of the file
- */
-function downloadCSV(filename, content) {
-    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    if (link.download !== undefined) {
+const utils = {
+    /**
+     * Format a number with thousand separators and the specified number of decimal places
+     * @param {number} number - The number to format
+     * @param {number} decimals - The number of decimal places
+     * @returns {string} - The formatted number as a string
+     */
+    formatNumber(number, decimals = 0) {
+        return number.toLocaleString('en-US', {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        });
+    },
+    
+    /**
+     * Download data as a CSV file
+     * @param {string} filename - The name of the file to download
+     * @param {string} csvContent - The CSV content as a string
+     */
+    downloadCSV(filename, csvContent) {
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
+        
         link.setAttribute('href', url);
         link.setAttribute('download', filename);
         link.style.visibility = 'hidden';
+        
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    },
+    
+    /**
+     * Generate a PDF report from an HTML element
+     * @param {string} filename - The name of the PDF file
+     * @param {HTMLElement} element - The HTML element to convert to PDF
+     */
+    generatePDF(filename, element) {
+        if (!window.html2canvas || !window.jspdf) {
+            console.error('PDF generation libraries not loaded');
+            return;
+        }
+        
+        html2canvas(element, { scale: 1 }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jspdf.jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+            
+            const imgWidth = 210; // A4 width in mm
+            const pageHeight = 297; // A4 height in mm
+            const imgHeight = canvas.height * imgWidth / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 0;
+            
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+            
+            while (heightLeft >= 0) {
+                position = heightLeft - imgHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+            }
+            
+            pdf.save(`${filename}.pdf`);
+        });
+    },
+    
+    /**
+     * Check if a value is numeric
+     * @param {*} value - The value to check
+     * @returns {boolean} - True if numeric, false otherwise
+     */
+    isNumeric(value) {
+        if (typeof value === 'number') return true;
+        if (typeof value !== 'string') return false;
+        return !isNaN(value) && !isNaN(parseFloat(value));
+    },
+    
+    /**
+     * Create a date string in format YYYY-MM-DD
+     * @returns {string} - The current date as a string
+     */
+    getCurrentDate() {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     }
-}
-
-/**
- * Function to format numbers with commas
- * @param {number} number - The number to be formatted
- * @returns {string} - The formatted number
- */
-function formatNumberWithCommas(number) {
-    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
-
-/**
- * Function to calculate the sum of an array of numbers
- * @param {number[]} numbers - The array of numbers
- * @returns {number} - The sum of the numbers
- */
-function calculateSum(numbers) {
-    return numbers.reduce((acc, num) => acc + num, 0);
-}
-
-/**
- * Function to calculate the average of an array of numbers
- * @param {number[]} numbers - The array of numbers
- * @returns {number} - The average of the numbers
- */
-function calculateAverage(numbers) {
-    if (numbers.length === 0) return 0;
-    return calculateSum(numbers) / numbers.length;
-}
-
-/**
- * Function to round a number to a specified number of decimal places
- * @param {number} number - The number to be rounded
- * @param {number} decimalPlaces - The number of decimal places
- * @returns {number} - The rounded number
- */
-function roundToDecimalPlaces(number, decimalPlaces) {
-    const factor = Math.pow(10, decimalPlaces);
-    return Math.round(number * factor) / factor;
-}
-
-/**
- * Function to convert a date to a formatted string
- * @param {Date} date - The date to be formatted
- * @returns {string} - The formatted date string
- */
-function formatDate(date) {
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-}
-
-/**
- * Function to parse a CSV string into an array of objects
- * @param {string} csvString - The CSV string to be parsed
- * @returns {Object[]} - The array of objects
- */
-function parseCSV(csvString) {
-    const lines = csvString.split('\n');
-    const headers = lines[0].split(',');
-    return lines.slice(1).map(line => {
-        const values = line.split(',');
-        return headers.reduce((obj, header, index) => {
-            obj[header] = values[index];
-            return obj;
-        }, {});
-    });
-}
-
-export {
-    downloadCSV,
-    formatNumberWithCommas,
-    calculateSum,
-    calculateAverage,
-    roundToDecimalPlaces,
-    formatDate,
-    parseCSV
 };
+
+// Make utils available globally
+window.utils = utils;

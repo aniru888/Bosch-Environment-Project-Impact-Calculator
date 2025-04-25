@@ -4,45 +4,492 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A/R Project Impact Calculator</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="main.js" defer></script>
-    <script src="forest/forestMain.js" defer></script>
-    <script src="water/waterMain.js" defer></script>
+    <link rel="stylesheet" href="assets/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 </head>
 <body>
     <header>
-        <h1>A/R Project Impact Calculator</h1>
-        <nav>
-            <ul>
-                <li><a href="#" id="forest-tab">Forest Module</a></li>
-                <li><a href="#" id="water-tab">Water Module</a></li>
-            </ul>
-        </nav>
+        <div class="container">
+            <h1 class="app-title">A/R Project Impact Calculator</h1>
+            <nav>
+                <ul class="tabs">
+                    <li><a href="#" id="forest-tab" class="active">Afforestation/Reforestation</a></li>
+                    <li><a href="#" id="water-tab">Water Body Restoration</a></li>
+                </ul>
+            </nav>
+        </div>
     </header>
+
     <main>
-        <section id="forest-section" class="module-section">
-            <h2>Forest Module</h2>
-            <form id="forest-form">
-                <!-- Add form fields for Forest Module -->
-            </form>
-            <div id="forest-results">
-                <!-- Add results display for Forest Module -->
-            </div>
-            <button id="forest-export-btn">Export Results</button>
-        </section>
-        <section id="water-section" class="module-section">
-            <h2>Water Module</h2>
-            <form id="water-form">
-                <!-- Add form fields for Water Module -->
-            </form>
-            <div id="water-results">
-                <!-- Add results display for Water Module -->
-            </div>
-            <button id="water-export-btn">Export Results</button>
-        </section>
+        <div class="container">
+            <!-- Forest Project Content -->
+            <section id="forest-section" class="project-content active">
+                <!-- Forest Calculator Form -->
+                <div class="content-grid">
+                    <!-- Form column -->
+                    <div class="form-column">
+                        <div class="card">
+                            <h2>Forest Project Details</h2>
+                            <form id="forest-form">
+                                <!-- Basic details -->
+                                <div class="form-group">
+                                    <h3>Project Information</h3>
+                                    <div class="form-row">
+                                        <label for="forest-name">Project Name:</label>
+                                        <input type="text" id="forest-name" name="projectName" placeholder="Enter project name">
+                                    </div>
+                                    <div class="form-row">
+                                        <label for="forest-area">Project Area (ha):</label>
+                                        <input type="number" id="forest-area" name="area" value="10" min="0" step="0.1" required>
+                                    </div>
+                                    <div class="form-row">
+                                        <label for="forest-duration">Project Duration (years):</label>
+                                        <input type="number" id="forest-duration" name="projectDuration" value="30" min="1" max="100" required>
+                                    </div>
+                                </div>
+
+                                <!-- Growth parameters -->
+                                <div class="form-group">
+                                    <h3>Growth Parameters</h3>
+                                    <div class="form-row">
+                                        <label for="forest-density">Planting Density (trees/ha):</label>
+                                        <input type="number" id="forest-density" name="plantingDensity" value="1600" min="0" required>
+                                    </div>
+                                    <div class="form-row">
+                                        <label for="forest-growth">Annual Growth Rate (m³/ha/yr):</label>
+                                        <input type="number" id="forest-growth" name="growthRate" value="15" min="0" step="0.1" required>
+                                    </div>
+                                    <div class="form-row">
+                                        <label for="forest-mortality">Annual Mortality Rate (%):</label>
+                                        <input type="number" id="forest-mortality" name="mortalityRate" value="2" min="0" max="100" step="0.1" required>
+                                    </div>
+                                </div>
+
+                                <!-- Carbon parameters -->
+                                <div class="form-group">
+                                    <h3>Carbon Parameters</h3>
+                                    <div class="form-row">
+                                        <label for="forest-wood-density">Wood Density (t/m³):</label>
+                                        <input type="number" id="forest-wood-density" name="woodDensity" value="0.5" min="0" step="0.01" required>
+                                    </div>
+                                    <div class="form-row">
+                                        <label for="forest-bef">Biomass Expansion Factor:</label>
+                                        <input type="number" id="forest-bef" name="bef" value="1.5" min="1" step="0.01" required>
+                                    </div>
+                                    <div class="form-row">
+                                        <label for="forest-rsr">Root-to-Shoot Ratio:</label>
+                                        <input type="number" id="forest-rsr" name="rsr" value="0.25" min="0" step="0.01" required>
+                                    </div>
+                                    <div class="form-row">
+                                        <label for="forest-carbon">Carbon Fraction:</label>
+                                        <input type="number" id="forest-carbon" name="carbonFraction" value="0.47" min="0" max="1" step="0.01" required>
+                                    </div>
+                                </div>
+
+                                <!-- Cost Analysis -->
+                                <div class="form-group">
+                                    <h3>Cost Analysis</h3>
+                                    <div class="form-row">
+                                        <label for="forest-cost">Project Cost (USD):</label>
+                                        <input type="number" id="forest-cost" name="projectCost" value="50000" min="0" required>
+                                    </div>
+                                    <div class="form-row">
+                                        <label for="forest-carbon-price">Carbon Price (USD/tCO2e):</label>
+                                        <input type="number" id="forest-carbon-price" name="carbonPrice" value="5" min="0" step="0.1" required>
+                                    </div>
+                                </div>
+
+                                <!-- Species data upload -->
+                                <div class="form-group">
+                                    <h3>Species Data</h3>
+                                    <p>For multi-species calculation, upload species data:</p>
+                                    <div class="form-row">
+                                        <input type="file" id="forest-species-file" name="speciesFile" accept=".csv">
+                                        <button type="button" id="download-template-btn" class="btn btn-secondary">Download Template</button>
+                                    </div>
+                                </div>
+
+                                <!-- Error messages -->
+                                <div id="forest-error" class="error-message"></div>
+
+                                <!-- Action buttons -->
+                                <div class="action-buttons">
+                                    <button type="submit" id="forest-calculate-btn" class="btn btn-primary">Calculate</button>
+                                    <button type="button" id="forest-reset-btn" class="btn btn-secondary">Reset</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Results column -->
+                    <div class="results-column">
+                        <!-- Results section (initially hidden) -->
+                        <div id="forest-results" class="results-section hidden">
+                            <!-- Results Summary -->
+                            <div class="card">
+                                <h3>Results Summary</h3>
+                                <div id="forest-summary" class="metrics-grid">
+                                    <div class="metric">
+                                        <span class="metric-value" id="total-co2e">0</span>
+                                        <span class="metric-label">Total CO₂e Sequestered (tonnes)</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value" id="avg-annual-co2e">0</span>
+                                        <span class="metric-label">Annual Average CO₂e (tonnes/yr)</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value" id="final-carbon">0</span>
+                                        <span class="metric-label">Final Carbon Stock (tonnes C)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Chart -->
+                            <div class="card">
+                                <h3>Sequestration Over Time</h3>
+                                <div class="chart-container">
+                                    <canvas id="sequestration-chart"></canvas>
+                                </div>
+                            </div>
+                            
+                            <!-- Detailed Results Table -->
+                            <div class="card">
+                                <h3>Yearly Sequestration Details</h3>
+                                <div class="table-container">
+                                    <table id="forest-results-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Year</th>
+                                                <th>Surviving Trees</th>
+                                                <th>Growing Stock (m³)</th>
+                                                <th>Carbon Content (t C)</th>
+                                                <th>CO₂e (t)</th>
+                                                <th>Annual CO₂e (t/yr)</th>
+                                                <th>Cumulative CO₂e (t)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="forest-results-body">
+                                            <!-- Results rows will be added here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Cost Analysis Section -->
+                            <div id="cost-analysis-section" class="card">
+                                <h3>Cost Analysis</h3>
+                                <div class="metrics-grid">
+                                    <div class="metric">
+                                        <span class="metric-value" id="cost-per-tonne">0</span>
+                                        <span class="metric-label">Cost per Tonne CO₂e (USD/t)</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value" id="cost-per-hectare">0</span>
+                                        <span class="metric-label">Cost per Hectare (USD/ha)</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value" id="establishment-cost">0</span>
+                                        <span class="metric-label">Establishment Cost (USD)</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value" id="maintenance-cost">0</span>
+                                        <span class="metric-label">Maintenance Cost (USD)</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value" id="monitoring-cost">0</span>
+                                        <span class="metric-label">Monitoring Cost (USD)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Carbon Credits Section -->
+                            <div id="carbon-credits-section" class="card">
+                                <h3>Carbon Financing</h3>
+                                <div class="metrics-grid">
+                                    <div class="metric">
+                                        <span class="metric-value" id="carbon-credits">0</span>
+                                        <span class="metric-label">Potential Carbon Credits (VERs)</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value" id="carbon-revenue">0</span>
+                                        <span class="metric-label">Potential Revenue (USD)</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value" id="risk-buffer">20</span>
+                                        <span class="metric-label">Risk Buffer (%)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Green Cover Section -->
+                            <div id="green-cover-section" class="card">
+                                <h3>Green Cover Metrics</h3>
+                                <div class="metrics-grid">
+                                    <div class="metric">
+                                        <span class="metric-value" id="initial-green-cover">0</span>
+                                        <span class="metric-label">Initial Green Cover (%)</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value" id="final-green-cover">0</span>
+                                        <span class="metric-label">Final Green Cover (%)</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value" id="green-cover-increase">0</span>
+                                        <span class="metric-label">Green Cover Increase (%)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Biodiversity Section -->
+                            <div id="biodiversity-section" class="card">
+                                <h3>Biodiversity Enhancement</h3>
+                                <div class="metrics-grid">
+                                    <div class="metric">
+                                        <span class="metric-value" id="biodiversity-index">0</span>
+                                        <span class="metric-label">Biodiversity Index</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value" id="species-count">0</span>
+                                        <span class="metric-label">Number of Tree Species</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value" id="habitat-creation">0</span>
+                                        <span class="metric-label">Habitat Created (m²)</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value" id="species-supported">0</span>
+                                        <span class="metric-label">Potential Species Supported</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Beneficiaries Section -->
+                            <div id="beneficiaries-section" class="card">
+                                <h3>Community Impact</h3>
+                                <div class="metrics-grid">
+                                    <div class="metric">
+                                        <span class="metric-value" id="direct-beneficiaries">0</span>
+                                        <span class="metric-label">Direct Beneficiaries</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value" id="indirect-beneficiaries">0</span>
+                                        <span class="metric-label">Indirect Beneficiaries</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value" id="total-beneficiaries">0</span>
+                                        <span class="metric-label">Total Beneficiaries</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Export buttons -->
+                            <div class="action-buttons">
+                                <button id="forest-export-btn" class="btn">Export to CSV</button>
+                                <button id="forest-pdf-btn" class="btn">Generate PDF</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Water Project Content -->
+            <section id="water-section" class="project-content hidden">
+                <!-- Water Calculator Form -->
+                <div class="content-grid">
+                    <!-- Form column -->
+                    <div class="form-column">
+                        <div class="card">
+                            <h2>Water Project Details</h2>
+                            <form id="water-form">
+                                <!-- Project details -->
+                                <div class="form-group">
+                                    <h3>Project Information</h3>
+                                    <div class="form-row">
+                                        <label for="water-name">Project Name:</label>
+                                        <input type="text" id="water-name" name="projectName" placeholder="Enter project name">
+                                    </div>
+                                    <div class="form-row">
+                                        <label for="water-area">Water Body Area (ha):</label>
+                                        <input type="number" id="water-area" name="waterArea" value="5" min="0" step="0.1" required>
+                                    </div>
+                                    <div class="form-row">
+                                        <label for="water-duration">Project Duration (years):</label>
+                                        <input type="number" id="water-duration" name="projectDuration" value="20" min="1" max="100" required>
+                                    </div>
+                                </div>
+
+                                <!-- Rainfall and runoff -->
+                                <div class="form-group">
+                                    <h3>Water Parameters</h3>
+                                    <div class="form-row">
+                                        <label for="water-rainfall">Annual Rainfall (mm):</label>
+                                        <input type="number" id="water-rainfall" name="rainFall" value="1200" min="0" required>
+                                    </div>
+                                    <div class="form-row">
+                                        <label for="water-runoff">Runoff Coefficient:</label>
+                                        <input type="number" id="water-runoff" name="runoffCoefficient" value="0.7" min="0" max="1" step="0.01" required>
+                                    </div>
+                                    <div class="form-row">
+                                        <label for="water-efficiency">Capture Efficiency:</label>
+                                        <input type="number" id="water-efficiency" name="captureEfficiency" value="0.85" min="0" max="1" step="0.01" required>
+                                    </div>
+                                </div>
+
+                                <!-- Energy and emissions -->
+                                <div class="form-group">
+                                    <h3>Energy Parameters</h3>
+                                    <div class="form-row">
+                                        <label for="water-energy">Energy Savings (kWh/KL):</label>
+                                        <input type="number" id="water-energy" name="energySavings" value="1.5" min="0" step="0.1" required>
+                                    </div>
+                                </div>
+
+                                <!-- Cost analysis -->
+                                <div class="form-group">
+                                    <h3>Cost Analysis</h3>
+                                    <div class="form-row">
+                                        <label for="water-cost">Project Cost (USD):</label>
+                                        <input type="number" id="water-cost" name="waterProjectCost" value="200000" min="0" required>
+                                    </div>
+                                    <div class="form-row">
+                                        <label for="water-value">Water Value (USD/KL):</label>
+                                        <input type="number" id="water-value" name="waterValue" value="50" min="0" step="0.1" required>
+                                    </div>
+                                </div>
+
+                                <!-- Error messages -->
+                                <div id="water-error" class="error-message"></div>
+
+                                <!-- Action buttons -->
+                                <div class="action-buttons">
+                                    <button type="submit" id="water-calculate-btn" class="btn btn-primary">Calculate</button>
+                                    <button type="button" id="water-reset-btn" class="btn btn-secondary">Reset</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Results column -->
+                    <div class="results-column">
+                        <!-- Results section (initially hidden) -->
+                        <div id="water-results" class="results-section hidden">
+                            <!-- Results Summary -->
+                            <div class="card">
+                                <h3>Results Summary</h3>
+                                <div class="metrics-grid">
+                                    <div class="metric">
+                                        <span class="metric-value" id="water-captured">0</span>
+                                        <span class="metric-label">Annual Water Captured (KL/yr)</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value" id="total-water-captured">0</span>
+                                        <span class="metric-label">Total Water Captured (KL)</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value" id="annual-energy-saved">0</span>
+                                        <span class="metric-label">Annual Energy Saved (kWh/yr)</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value" id="emissions-reduction">0</span>
+                                        <span class="metric-label">Annual Emissions Reduction (t CO₂e/yr)</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value" id="total-emissions-reduction">0</span>
+                                        <span class="metric-label">Total Emissions Reduction (t CO₂e)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Cost Analysis -->
+                            <div class="card">
+                                <h3>Cost Analysis</h3>
+                                <div class="metrics-grid">
+                                    <div class="metric">
+                                        <span class="metric-value" id="water-cost-per-kl">0</span>
+                                        <span class="metric-label">Cost per KL (USD/KL)</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value" id="water-annual-value">0</span>
+                                        <span class="metric-label">Annual Value (USD/yr)</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value" id="water-payback-period">0</span>
+                                        <span class="metric-label">Payback Period (years)</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value" id="water-roi">0</span>
+                                        <span class="metric-label">ROI (%)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Chart -->
+                            <div class="card">
+                                <h3>Water Capture Over Time</h3>
+                                <div class="chart-container">
+                                    <canvas id="water-capture-chart"></canvas>
+                                </div>
+                            </div>
+                            
+                            <!-- Detailed Results Table -->
+                            <div class="card">
+                                <h3>Yearly Water Capture Details</h3>
+                                <div class="table-container">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Year</th>
+                                                <th>Annual Water Captured (KL)</th>
+                                                <th>Cumulative Water (KL)</th>
+                                                <th>Annual Energy Saved (kWh)</th>
+                                                <th>Annual Emissions Reduction (t CO₂e)</th>
+                                                <th>Cumulative Emissions (t CO₂e)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="water-results-body">
+                                            <!-- Results rows will be added here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Export buttons -->
+                            <div class="action-buttons">
+                                <button id="water-export-btn" class="btn">Export to CSV</button>
+                                <button id="water-pdf-btn" class="btn">Generate PDF</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
     </main>
+    
     <footer>
-        <p>&copy; 2023 A/R Project Impact Calculator</p>
+        <div class="container">
+            <p>&copy; 2025 A/R Project Impact Calculator</p>
+        </div>
     </footer>
+
+    <!-- Script imports -->
+    <script src="utils.js"></script>
+    <script src="domUtils.js"></script>
+    <script src="analytics.js"></script>
+    <script src="forest/forestCalcs.js"></script>
+    <script src="forest/forestDOM.js"></script>
+    <script src="forest/forestIO.js"></script>
+    <script src="forest/forestListHandlers.js"></script>
+    <script src="forest/forestEnhanced.js"></script>
+    <script src="forest/forestMain.js"></script>
+    <script src="water/waterCalcs.js"></script>
+    <script src="water/waterDOM.js"></script>
+    <script src="water/waterIO.js"></script>
+    <script src="water/waterListHandlers.js"></script>
+    <script src="water/waterEnhanced.js"></script>
+    <script src="water/waterMain.js"></script>
+    <script src="main.js"></script>
 </body>
 </html>

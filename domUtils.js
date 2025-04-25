@@ -1,76 +1,143 @@
 /**
- * DOM manipulation utilities for the application
+ * DOM manipulation utilities for the A/R Project Impact Calculator
  */
 
-/**
- * Function to create an element with specified attributes and content
- * @param {string} tagName - The name of the tag to be created
- * @param {Object} attributes - The attributes to be added to the element
- * @param {string} content - The content to be added to the element
- * @returns {HTMLElement} - The created element
- */
-function createElement(tagName, attributes = {}, content = '') {
-    const element = document.createElement(tagName);
-    for (const [key, value] of Object.entries(attributes)) {
-        element.setAttribute(key, value);
+const domUtils = {
+    /**
+     * Clear all child elements from a DOM element
+     * @param {HTMLElement} element - The element to clear
+     */
+    clearElement(element) {
+        while (element.firstChild) {
+            element.removeChild(element.firstChild);
+        }
+    },
+    
+    /**
+     * Show a DOM element by removing the hidden class
+     * @param {HTMLElement} element - The element to show
+     */
+    showElement(element) {
+        if (element) {
+            element.classList.remove('hidden');
+        }
+    },
+    
+    /**
+     * Hide a DOM element by adding the hidden class
+     * @param {HTMLElement} element - The element to hide
+     */
+    hideElement(element) {
+        if (element) {
+            element.classList.add('hidden');
+        }
+    },
+    
+    /**
+     * Create a new DOM element with the specified attributes
+     * @param {string} tag - The HTML tag name
+     * @param {object} options - Options for the element (className, textContent, innerHTML, attributes)
+     * @returns {HTMLElement} - The created DOM element
+     */
+    createElement(tag, options = {}) {
+        const element = document.createElement(tag);
+        
+        if (options.className) {
+            element.className = options.className;
+        }
+        
+        if (options.textContent) {
+            element.textContent = options.textContent;
+        }
+        
+        if (options.innerHTML) {
+            element.innerHTML = options.innerHTML;
+        }
+        
+        if (options.attributes) {
+            for (const [attr, value] of Object.entries(options.attributes)) {
+                element.setAttribute(attr, value);
+            }
+        }
+        
+        return element;
+    },
+    
+    /**
+     * Create a table row with the specified cells
+     * @param {Array} cells - Array of cell values or objects with value and className
+     * @returns {HTMLTableRowElement} - The created table row
+     */
+    createTableRow(cells) {
+        const row = document.createElement('tr');
+        
+        cells.forEach(cell => {
+            const td = document.createElement('td');
+            if (typeof cell === 'object' && cell !== null) {
+                if (cell.value !== undefined) {
+                    td.textContent = cell.value;
+                }
+                if (cell.className) {
+                    td.className = cell.className;
+                }
+            } else {
+                td.textContent = cell;
+            }
+            row.appendChild(td);
+        });
+        
+        return row;
+    },
+    
+    /**
+     * Update a metric value element with a formatted number
+     * @param {string} elementId - The ID of the element to update
+     * @param {number} value - The value to display
+     * @param {number} decimals - The number of decimal places
+     */
+    updateMetric(elementId, value, decimals = 0) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.textContent = utils.formatNumber(value, decimals);
+        }
+    },
+    
+    /**
+     * Show an error message
+     * @param {string} message - The error message to display
+     * @param {HTMLElement} element - The element to display the error in
+     */
+    showError(message, element) {
+        if (element) {
+            element.textContent = message;
+            this.showElement(element);
+        }
+    },
+    
+    /**
+     * Clear error messages
+     * @param {HTMLElement} element - The error message element
+     */
+    clearError(element) {
+        if (element) {
+            element.textContent = '';
+            this.hideElement(element);
+        }
+    },
+    
+    /**
+     * Toggle display of a section
+     * @param {HTMLElement} element - The element to toggle
+     * @param {boolean} show - Whether to show or hide the element
+     */
+    toggleSection(element, show) {
+        if (show) {
+            this.showElement(element);
+        } else {
+            this.hideElement(element);
+        }
     }
-    element.innerHTML = content;
-    return element;
-}
-
-/**
- * Function to clear the content of an element
- * @param {HTMLElement} element - The element to be cleared
- */
-function clearElementContent(element) {
-    while (element.firstChild) {
-        element.removeChild(element.firstChild);
-    }
-}
-
-/**
- * Function to show an element
- * @param {HTMLElement} element - The element to be shown
- */
-function showElement(element) {
-    element.style.display = 'block';
-}
-
-/**
- * Function to hide an element
- * @param {HTMLElement} element - The element to be hidden
- */
-function hideElement(element) {
-    element.style.display = 'none';
-}
-
-/**
- * Function to toggle the visibility of an element
- * @param {HTMLElement} element - The element to be toggled
- */
-function toggleElementVisibility(element) {
-    if (element.style.display === 'none' || element.style.display === '') {
-        element.style.display = 'block';
-    } else {
-        element.style.display = 'none';
-    }
-}
-
-/**
- * Function to add an event listener to an element
- * @param {HTMLElement} element - The element to add the event listener to
- * @param {string} eventType - The type of event to listen for
- * @param {Function} callback - The callback function to be executed when the event occurs
- */
-function addEventListener(element, eventType, callback) {
-    element.addEventListener(eventType, callback);
-}
-
-export {
-    createElement,
-    clearElementContent,
-    showElement,
-    hideElement,
-    toggleElementVisibility,
-    addEventListener
 };
+
+// Make domUtils available globally
+window.domUtils = domUtils;
