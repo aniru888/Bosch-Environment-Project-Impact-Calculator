@@ -74,7 +74,11 @@ function calculateForest(formData) {
             formData.area,
             results
         );
-        
+
+        // --- DEBUGGING START ---
+        console.log('Calculation results:', results);
+        // --- DEBUGGING END ---
+
         // Trigger results event for UI update with defensive check
         if (window.forestCalcs && window.forestCalcs.eventSystem) {
             window.forestCalcs.eventSystem.onResults(results);
