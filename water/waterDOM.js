@@ -231,6 +231,7 @@ function updateResultsTable(yearlyData) {
 function createWaterCaptureChart(results, chartElementId) {
     // Get the chart canvas element
     const chartElement = document.getElementById(chartElementId);
+    console.log('Chart element found:', !!chartElement, chartElementId); // Debug
     if (!chartElement) return;
     
     // Check if Chart.js is available
@@ -244,68 +245,78 @@ function createWaterCaptureChart(results, chartElementId) {
         window.appGlobals.water.waterCaptureChart.destroy();
     }
     
-    // Prepare data
-    const years = results.yearly.map(data => `Year ${data.year}`);
-    const waterData = results.yearly.map(data => data.cumulativeWaterCaptured);
-    const emissionsData = results.yearly.map(data => data.cumulativeEmissionsReduction);
+    // Prepare data with safety checks
+    const years = results.yearly.map(data => `Year ${data.year || 0}`);
+    const waterData = results.yearly.map(data => data.cumulativeWaterCaptured || 0);
+    const emissionsData = results.yearly.map(data => data.cumulativeEmissionsReduction || 0);
     
-    // Create new chart
-    window.appGlobals.water.waterCaptureChart = new Chart(chartElement, {
-        type: 'bar',
-        data: {
-            labels: years,
-            datasets: [
-                {
-                    label: 'Cumulative Water Captured (KL)',
-                    data: waterData,
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1,
-                    yAxisID: 'y'
-                },
-                {
-                    label: 'Cumulative Emissions Reduction (tonnes CO₂)',
-                    data: emissionsData,
-                    type: 'line',
-                    fill: false,
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 2,
-                    yAxisID: 'y1'
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            interaction: {
-                mode: 'index',
-                intersect: false,
-            },
-            scales: {
-                y: {
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
-                    title: {
-                        display: true,
-                        text: 'Water Captured (KL)'
-                    }
-                },
-                y1: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    title: {
-                        display: true,
-                        text: 'Emissions Reduction (tonnes CO₂)'
+    console.log('Water chart data prepared:', {years, waterData, emissionsData}); // Debug
+    
+    // Create new chart with fixed dimensions
+    chartElement.style.height = '300px'; // Ensure canvas has height
+    
+    try {
+        window.appGlobals.water.waterCaptureChart = new Chart(chartElement, {
+            type: 'bar',
+            data: {
+                labels: years,
+                datasets: [
+                    {
+                        label: 'Cumulative Water Captured (KL)',
+                        data: waterData,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'y'
                     },
-                    grid: {
-                        drawOnChartArea: false
+                    {
+                        label: 'Cumulative Emissions Reduction (tonnes CO₂)',
+                        data: emissionsData,
+                        type: 'line',
+                        fill: false,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 2,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // Allow chart to control its size
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Water Captured (KL)'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Emissions Reduction (tonnes CO₂)'
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        }
                     }
                 }
             }
-        }
-    });
+        });
+        console.log('Water chart created successfully');
+    } catch (err) {
+        console.error('Error creating water chart:', err);
+    }
 }
 
 /**

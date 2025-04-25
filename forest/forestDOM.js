@@ -153,6 +153,25 @@ function displayForestResults(results) {
     // Show the results section
     domUtils.showElement(window.appGlobals.forest.resultsSection);
     
+    // Make sure we have valid data
+    if (!results || !results.yearly || results.yearly.length === 0) {
+        showForestError('No calculation results to display.');
+        return;
+    }
+    
+    // Get data from the final year row for summary (in case summary wasn't properly calculated)
+    const finalYearData = results.yearly[results.yearly.length - 1];
+    
+    // Update summary with values from final row if needed
+    if (!results.summary) {
+        results.summary = {};
+    }
+    
+    // Ensure summary has the correct values from final row
+    results.summary.totalCO2e = finalYearData.cumulativeCO2e;
+    results.summary.avgAnnualCO2e = finalYearData.cumulativeCO2e / results.yearly.length;
+    results.summary.finalCarbonStock = finalYearData.carbonContent;
+    
     // Update summary metrics
     updateSummaryMetrics(results.summary);
     
@@ -259,6 +278,7 @@ function updateResultsTable(yearlyData) {
 function createSequestrationChart(results, chartElementId) {
     // Get the chart canvas element
     const chartElement = document.getElementById(chartElementId);
+    console.log('Chart element found:', !!chartElement, chartElementId); // Debug
     if (!chartElement) return;
     
     // Check if Chart.js is available
@@ -272,66 +292,76 @@ function createSequestrationChart(results, chartElementId) {
         window.appGlobals.forest.sequestrationChart.destroy();
     }
     
-    // Prepare data
-    const years = results.yearly.map(data => `Year ${data.year}`);
-    const co2eData = results.yearly.map(data => data.co2e);
-    const annualIncrementData = results.yearly.map(data => data.annualIncrement);
+    // Prepare data with safety checks
+    const years = results.yearly.map(data => `Year ${data.year || 0}`);
+    const co2eData = results.yearly.map(data => data.co2e || 0);
+    const annualIncrementData = results.yearly.map(data => data.annualIncrement || 0);
     
-    // Create new chart
-    window.appGlobals.forest.sequestrationChart = new Chart(chartElement, {
-        type: 'line',
-        data: {
-            labels: years,
-            datasets: [
-                {
-                    label: 'Cumulative CO₂e (tonnes)',
-                    data: co2eData,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 2,
-                    yAxisID: 'y'
-                },
-                {
-                    label: 'Annual CO₂e (tonnes/year)',
-                    data: annualIncrementData,
-                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                    borderColor: 'rgba(153, 102, 255, 1)',
-                    borderWidth: 2,
-                    yAxisID: 'y1'
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            interaction: {
-                mode: 'index',
-                intersect: false,
-            },
-            scales: {
-                y: {
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
-                    title: {
-                        display: true,
-                        text: 'Cumulative CO₂e (tonnes)'
-                    }
-                },
-                y1: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    title: {
-                        display: true,
-                        text: 'Annual CO₂e (tonnes/year)'
+    console.log('Chart data prepared:', {years, co2eData, annualIncrementData}); // Debug
+    
+    // Create new chart with fixed dimensions
+    chartElement.style.height = '300px'; // Ensure canvas has height
+    
+    try {
+        window.appGlobals.forest.sequestrationChart = new Chart(chartElement, {
+            type: 'line',
+            data: {
+                labels: years,
+                datasets: [
+                    {
+                        label: 'Cumulative CO₂e (tonnes)',
+                        data: co2eData,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        yAxisID: 'y'
                     },
-                    grid: {
-                        drawOnChartArea: false
+                    {
+                        label: 'Annual CO₂e (tonnes/year)',
+                        data: annualIncrementData,
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 2,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // Allow chart to control its size
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Cumulative CO₂e (tonnes)'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Annual CO₂e (tonnes/year)'
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        }
                     }
                 }
             }
-        }
-    });
+        });
+        console.log('Chart created successfully');
+    } catch (err) {
+        console.error('Error creating chart:', err);
+    }
 }
 
 /**

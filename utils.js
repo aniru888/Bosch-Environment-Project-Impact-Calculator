@@ -10,10 +10,31 @@ const utils = {
      * @returns {string} - The formatted number as a string
      */
     formatNumber(number, decimals = 0) {
-        return number.toLocaleString('en-US', {
-            minimumFractionDigits: decimals,
-            maximumFractionDigits: decimals
-        });
+        // Handle undefined, null, or NaN values
+        if (number === undefined || number === null || isNaN(number)) {
+            console.warn('formatNumber received invalid value:', number);
+            return '0';
+        }
+        
+        // Convert to number if it's not already
+        const num = typeof number === 'number' ? number : Number(number);
+        
+        // Handle NaN after conversion
+        if (isNaN(num)) {
+            console.warn('formatNumber could not convert value to number:', number);
+            return '0';
+        }
+        
+        try {
+            // Format with the specified number of decimal places
+            return num.toLocaleString('en-US', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            });
+        } catch (err) {
+            console.error('Error in formatNumber:', err);
+            return '0';
+        }
     },
     
     /**
