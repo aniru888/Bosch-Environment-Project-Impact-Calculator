@@ -29,6 +29,9 @@ function initForestDOM(options = {}) {
     
     // Register DOM callbacks with event system
     registerEventHandlers();
+    
+    // Debug log to confirm initialization
+    console.log('Forest DOM module initialized, event handlers registered');
 }
 
 /**
@@ -91,6 +94,7 @@ function registerEventHandlers() {
     
     // Register results handler
     window.forestCalcs.eventSystem.on('results', (results) => {
+        console.log('Results event received in forestDOM:', results);
         displayForestResults(results);
     });
     
@@ -98,6 +102,9 @@ function registerEventHandlers() {
     window.forestCalcs.eventSystem.on('reset', () => {
         resetForestUI();
     });
+    
+    // Log to confirm event handlers were registered
+    console.log('Forest DOM event handlers registered successfully');
 }
 
 /**
