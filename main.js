@@ -39,13 +39,17 @@ class AppMain {
     
     _registerModules() {
         // Initialize forest calculator module
-        if (typeof window.initForestCalculator === 'function') {
-            this.modules.forest = window.initForestCalculator();
+        if (window.forestMain && typeof window.forestMain.init === 'function') {
+            this.modules.forest = window.forestMain.init();
+        } else {
+            console.error('Forest calculator module not found or initialization function missing');
         }
         
         // Initialize water calculator module
-        if (typeof window.initWaterCalculator === 'function') {
-            this.modules.water = window.initWaterCalculator();
+        if (window.waterMain && typeof window.waterMain.init === 'function') {
+            this.modules.water = window.waterMain.init();
+        } else {
+            console.error('Water calculator module not found or initialization function missing');
         }
     }
 }

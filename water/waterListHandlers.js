@@ -26,4 +26,5 @@ class WaterListHandlers {
     }
 }
 
-export default WaterListHandlers;
+// Replace export default with window object attachment
+window.WaterListHandlers = WaterListHandlers;

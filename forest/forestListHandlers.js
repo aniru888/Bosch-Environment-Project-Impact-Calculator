@@ -3,28 +3,23 @@
  * Manages event listeners and form handling for the Forest calculator
  */
 
-// Store form and button references
-let forestForm;
-let calculateButton;
-let resetButton;
-
 /**
  * Initialize event listeners for forest module
  */
 function initForestListeners() {
     // Get form and button elements
-    forestForm = document.getElementById('forest-form');
-    calculateButton = document.getElementById('forest-calculate-btn');
-    resetButton = document.getElementById('forest-reset-btn');
+    window.appGlobals.forest.form = document.getElementById('forest-form');
+    window.appGlobals.forest.calculateButton = document.getElementById('forest-calculate-btn');
+    window.appGlobals.forest.resetButton = document.getElementById('forest-reset-btn');
     
     // Set up form submission handler
-    if (forestForm) {
-        forestForm.addEventListener('submit', handleForestFormSubmit);
+    if (window.appGlobals.forest.form) {
+        window.appGlobals.forest.form.addEventListener('submit', handleForestFormSubmit);
     }
     
     // Set up reset button handler
-    if (resetButton) {
-        resetButton.addEventListener('click', handleForestReset);
+    if (window.appGlobals.forest.resetButton) {
+        window.appGlobals.forest.resetButton.addEventListener('click', handleForestReset);
     }
     
     // Set up input validation handlers
@@ -35,10 +30,10 @@ function initForestListeners() {
  * Set up validation for input fields
  */
 function setupInputValidation() {
-    if (!forestForm) return;
+    if (!window.appGlobals.forest.form) return;
     
     // Add validation handlers for all number inputs
-    const numericInputs = forestForm.querySelectorAll('input[type="number"]');
+    const numericInputs = window.appGlobals.forest.form.querySelectorAll('input[type="number"]');
     numericInputs.forEach(input => {
         input.addEventListener('input', () => {
             validateInput(input);
@@ -99,10 +94,10 @@ function handleForestFormSubmit(event) {
  * @returns {boolean} - Whether all inputs are valid
  */
 function validateAllInputs() {
-    if (!forestForm) return true;
+    if (!window.appGlobals.forest.form) return true;
     
     let allValid = true;
-    const requiredInputs = forestForm.querySelectorAll('input[required]');
+    const requiredInputs = window.appGlobals.forest.form.querySelectorAll('input[required]');
     
     requiredInputs.forEach(input => {
         const isValid = validateInput(input);
@@ -119,36 +114,36 @@ function validateAllInputs() {
  * @returns {Object} - Form data as an object
  */
 function collectForestFormData() {
-    if (!forestForm) return {};
+    if (!window.appGlobals.forest.form) return {};
     
     // Get form elements
-    const projectNameInput = document.getElementById('forest-name');
-    const areaInput = document.getElementById('forest-area');
-    const durationInput = document.getElementById('forest-duration');
-    const densityInput = document.getElementById('forest-density');
-    const growthRateInput = document.getElementById('forest-growth');
-    const mortalityRateInput = document.getElementById('forest-mortality');
-    const woodDensityInput = document.getElementById('forest-wood-density');
-    const befInput = document.getElementById('forest-bef');
-    const rsrInput = document.getElementById('forest-rsr');
-    const carbonFractionInput = document.getElementById('forest-carbon');
-    const projectCostInput = document.getElementById('forest-cost');
-    const carbonPriceInput = document.getElementById('forest-carbon-price');
+    window.appGlobals.forest.projectNameInput = document.getElementById('forest-name');
+    window.appGlobals.forest.areaInput = document.getElementById('forest-area');
+    window.appGlobals.forest.durationInput = document.getElementById('forest-duration');
+    window.appGlobals.forest.densityInput = document.getElementById('forest-density');
+    window.appGlobals.forest.growthRateInput = document.getElementById('forest-growth');
+    window.appGlobals.forest.mortalityRateInput = document.getElementById('forest-mortality');
+    window.appGlobals.forest.woodDensityInput = document.getElementById('forest-wood-density');
+    window.appGlobals.forest.befInput = document.getElementById('forest-bef');
+    window.appGlobals.forest.rsrInput = document.getElementById('forest-rsr');
+    window.appGlobals.forest.carbonFractionInput = document.getElementById('forest-carbon');
+    window.appGlobals.forest.projectCostInput = document.getElementById('forest-cost');
+    window.appGlobals.forest.carbonPriceInput = document.getElementById('forest-carbon-price');
     
     // Extract values
     const formData = {
-        projectName: projectNameInput ? projectNameInput.value : 'Forest Project',
-        area: parseFloat(areaInput ? areaInput.value : 10),
-        projectDuration: parseInt(durationInput ? durationInput.value : 30),
-        plantingDensity: parseInt(densityInput ? densityInput.value : 1600),
-        growthRate: parseFloat(growthRateInput ? growthRateInput.value : 15),
-        mortalityRate: parseFloat(mortalityRateInput ? mortalityRateInput.value : 2),
-        woodDensity: parseFloat(woodDensityInput ? woodDensityInput.value : 0.5),
-        bef: parseFloat(befInput ? befInput.value : 1.5),
-        rsr: parseFloat(rsrInput ? rsrInput.value : 0.25),
-        carbonFraction: parseFloat(carbonFractionInput ? carbonFractionInput.value : 0.47),
-        projectCost: parseFloat(projectCostInput ? projectCostInput.value : 50000),
-        carbonPrice: parseFloat(carbonPriceInput ? carbonPriceInput.value : 5)
+        projectName: window.appGlobals.forest.projectNameInput ? window.appGlobals.forest.projectNameInput.value : 'Forest Project',
+        area: parseFloat(window.appGlobals.forest.areaInput ? window.appGlobals.forest.areaInput.value : 10),
+        projectDuration: parseInt(window.appGlobals.forest.durationInput ? window.appGlobals.forest.durationInput.value : 30),
+        plantingDensity: parseInt(window.appGlobals.forest.densityInput ? window.appGlobals.forest.densityInput.value : 1600),
+        growthRate: parseFloat(window.appGlobals.forest.growthRateInput ? window.appGlobals.forest.growthRateInput.value : 15),
+        mortalityRate: parseFloat(window.appGlobals.forest.mortalityRateInput ? window.appGlobals.forest.mortalityRateInput.value : 2),
+        woodDensity: parseFloat(window.appGlobals.forest.woodDensityInput ? window.appGlobals.forest.woodDensityInput.value : 0.5),
+        bef: parseFloat(window.appGlobals.forest.befInput ? window.appGlobals.forest.befInput.value : 1.5),
+        rsr: parseFloat(window.appGlobals.forest.rsrInput ? window.appGlobals.forest.rsrInput.value : 0.25),
+        carbonFraction: parseFloat(window.appGlobals.forest.carbonFractionInput ? window.appGlobals.forest.carbonFractionInput.value : 0.47),
+        projectCost: parseFloat(window.appGlobals.forest.projectCostInput ? window.appGlobals.forest.projectCostInput.value : 50000),
+        carbonPrice: parseFloat(window.appGlobals.forest.carbonPriceInput ? window.appGlobals.forest.carbonPriceInput.value : 5)
     };
     
     return formData;
@@ -159,8 +154,8 @@ function collectForestFormData() {
  */
 function handleForestReset() {
     // Reset form
-    if (forestForm) {
-        forestForm.reset();
+    if (window.appGlobals.forest.form) {
+        window.appGlobals.forest.form.reset();
     }
     
     // Reset UI via event system

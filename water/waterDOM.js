@@ -3,12 +3,7 @@
  * Handles all DOM-related functionality for the Water calculator
  */
 
-// Store references to DOM elements
-let waterForm;
-let resultsSection;
-let resultsBody;
-let waterCaptureChart;
-let errorElement;
+// Remove variable declarations - using globals instead
 
 /**
  * Initialize Water DOM module
@@ -16,10 +11,10 @@ let errorElement;
  */
 function initWaterDOM(options = {}) {
     // Get DOM elements
-    waterForm = document.getElementById('water-form');
-    resultsSection = document.getElementById('water-results');
-    resultsBody = document.getElementById('water-results-body');
-    errorElement = document.getElementById('water-error');
+    window.appGlobals.water.form = document.getElementById('water-form');
+    window.appGlobals.water.resultsSection = document.getElementById('water-results');
+    window.appGlobals.water.resultsBody = document.getElementById('water-results-body');
+    window.appGlobals.water.errorElement = document.getElementById('water-error');
     
     // Initialize the event system if it's not already
     if (!window.waterCalcs.eventSystem.initialized) {
@@ -30,7 +25,7 @@ function initWaterDOM(options = {}) {
     setupFormFields();
     
     // Set up form validation
-    setupFormValidation(waterForm);
+    setupFormValidation(window.appGlobals.water.form);
     
     // Register DOM callbacks with event system
     registerEventHandlers();
@@ -111,9 +106,9 @@ function registerEventHandlers() {
  * @param {HTMLElement} element - Element associated with the error
  */
 function showWaterError(message, element) {
-    if (errorElement) {
-        errorElement.textContent = message;
-        errorElement.style.display = 'block';
+    if (window.appGlobals.water.errorElement) {
+        window.appGlobals.water.errorElement.textContent = message;
+        window.appGlobals.water.errorElement.style.display = 'block';
     }
     
     // Highlight the problematic input if provided
@@ -127,13 +122,13 @@ function showWaterError(message, element) {
  * Clear all error messages
  */
 function clearWaterErrors() {
-    if (errorElement) {
-        errorElement.textContent = '';
-        errorElement.style.display = 'none';
+    if (window.appGlobals.water.errorElement) {
+        window.appGlobals.water.errorElement.textContent = '';
+        window.appGlobals.water.errorElement.style.display = 'none';
     }
     
     // Remove error class from all inputs
-    const inputs = waterForm.querySelectorAll('.error');
+    const inputs = window.appGlobals.water.form.querySelectorAll('.error');
     inputs.forEach(input => input.classList.remove('error'));
 }
 
@@ -143,7 +138,7 @@ function clearWaterErrors() {
  */
 function displayWaterResults(results) {
     // Show the results section
-    domUtils.showElement(resultsSection);
+    domUtils.showElement(window.appGlobals.water.resultsSection);
     
     // Update summary metrics
     updateSummaryMetrics(results.summary);
@@ -211,7 +206,7 @@ function updateBeneficiaries(beneficiaries) {
  */
 function updateResultsTable(yearlyData) {
     // Clear existing rows
-    domUtils.clearElement(resultsBody);
+    domUtils.clearElement(window.appGlobals.water.resultsBody);
     
     // Add rows for each year
     yearlyData.forEach(data => {
@@ -224,7 +219,7 @@ function updateResultsTable(yearlyData) {
             utils.formatNumber(data.cumulativeEmissionsReduction, 1)
         ]);
         
-        resultsBody.appendChild(row);
+        window.appGlobals.water.resultsBody.appendChild(row);
     });
 }
 
@@ -245,8 +240,8 @@ function createWaterCaptureChart(results, chartElementId) {
     }
     
     // Destroy existing chart if it exists
-    if (waterCaptureChart) {
-        waterCaptureChart.destroy();
+    if (window.appGlobals.water.waterCaptureChart) {
+        window.appGlobals.water.waterCaptureChart.destroy();
     }
     
     // Prepare data
@@ -255,7 +250,7 @@ function createWaterCaptureChart(results, chartElementId) {
     const emissionsData = results.yearly.map(data => data.cumulativeEmissionsReduction);
     
     // Create new chart
-    waterCaptureChart = new Chart(chartElement, {
+    window.appGlobals.water.waterCaptureChart = new Chart(chartElement, {
         type: 'bar',
         data: {
             labels: years,
@@ -318,20 +313,20 @@ function createWaterCaptureChart(results, chartElementId) {
  */
 function resetWaterUI() {
     // Hide results section
-    domUtils.hideElement(resultsSection);
+    domUtils.hideElement(window.appGlobals.water.resultsSection);
     
     // Clear error messages
     clearWaterErrors();
     
     // Destroy chart
-    if (waterCaptureChart) {
-        waterCaptureChart.destroy();
-        waterCaptureChart = null;
+    if (window.appGlobals.water.waterCaptureChart) {
+        window.appGlobals.water.waterCaptureChart.destroy();
+        window.appGlobals.water.waterCaptureChart = null;
     }
     
     // Reset form
-    if (waterForm) {
-        waterForm.reset();
+    if (window.appGlobals.water.form) {
+        window.appGlobals.water.form.reset();
         setupFormFields(); // Restore default values
     }
 }

@@ -3,12 +3,7 @@
  * Handles all DOM-related functionality for the Forest calculator
  */
 
-// Store references to DOM elements
-let forestForm;
-let resultsSection;
-let resultsBody;
-let sequestrationChart;
-let errorElement;
+// Remove local variable declarations - using globals instead
 
 /**
  * Initialize Forest DOM module
@@ -16,10 +11,10 @@ let errorElement;
  */
 function initForestDOM(options = {}) {
     // Get DOM elements
-    forestForm = document.getElementById('forest-form');
-    resultsSection = document.getElementById('forest-results');
-    resultsBody = document.getElementById('forest-results-body');
-    errorElement = document.getElementById('forest-error');
+    window.appGlobals.forest.form = document.getElementById('forest-form');
+    window.appGlobals.forest.resultsSection = document.getElementById('forest-results');
+    window.appGlobals.forest.resultsBody = document.getElementById('forest-results-body');
+    window.appGlobals.forest.errorElement = document.getElementById('forest-error');
     
     // Initialize the event system if it's not already
     if (!window.forestCalcs.eventSystem.initialized) {
@@ -30,7 +25,7 @@ function initForestDOM(options = {}) {
     setupFormFields();
     
     // Set up form validation
-    setupFormValidation(forestForm);
+    setupFormValidation(window.appGlobals.forest.form);
     
     // Register DOM callbacks with event system
     registerEventHandlers();
@@ -111,9 +106,9 @@ function registerEventHandlers() {
  * @param {HTMLElement} element - Element associated with the error
  */
 function showForestError(message, element) {
-    if (errorElement) {
-        errorElement.textContent = message;
-        errorElement.style.display = 'block';
+    if (window.appGlobals.forest.errorElement) {
+        window.appGlobals.forest.errorElement.textContent = message;
+        window.appGlobals.forest.errorElement.style.display = 'block';
     }
     
     // Highlight the problematic input if provided
@@ -127,13 +122,13 @@ function showForestError(message, element) {
  * Clear all error messages
  */
 function clearForestErrors() {
-    if (errorElement) {
-        errorElement.textContent = '';
-        errorElement.style.display = 'none';
+    if (window.appGlobals.forest.errorElement) {
+        window.appGlobals.forest.errorElement.textContent = '';
+        window.appGlobals.forest.errorElement.style.display = 'none';
     }
     
     // Remove error class from all inputs
-    const inputs = forestForm.querySelectorAll('.error');
+    const inputs = window.appGlobals.forest.form.querySelectorAll('.error');
     inputs.forEach(input => input.classList.remove('error'));
 }
 
@@ -143,7 +138,7 @@ function clearForestErrors() {
  */
 function displayForestResults(results) {
     // Show the results section
-    domUtils.showElement(resultsSection);
+    domUtils.showElement(window.appGlobals.forest.resultsSection);
     
     // Update summary metrics
     updateSummaryMetrics(results.summary);
@@ -219,7 +214,7 @@ function updateBeneficiaries(beneficiaries) {
  */
 function updateResultsTable(yearlyData) {
     // Clear existing rows
-    domUtils.clearElement(resultsBody);
+    domUtils.clearElement(window.appGlobals.forest.resultsBody);
     
     // Add rows for each year
     yearlyData.forEach(data => {
@@ -233,7 +228,7 @@ function updateResultsTable(yearlyData) {
             utils.formatNumber(data.cumulativeCO2e, 1)
         ]);
         
-        resultsBody.appendChild(row);
+        window.appGlobals.forest.resultsBody.appendChild(row);
     });
 }
 
@@ -254,8 +249,8 @@ function createSequestrationChart(results, chartElementId) {
     }
     
     // Destroy existing chart if it exists
-    if (sequestrationChart) {
-        sequestrationChart.destroy();
+    if (window.appGlobals.forest.sequestrationChart) {
+        window.appGlobals.forest.sequestrationChart.destroy();
     }
     
     // Prepare data
@@ -264,7 +259,7 @@ function createSequestrationChart(results, chartElementId) {
     const annualIncrementData = results.yearly.map(data => data.annualIncrement);
     
     // Create new chart
-    sequestrationChart = new Chart(chartElement, {
+    window.appGlobals.forest.sequestrationChart = new Chart(chartElement, {
         type: 'line',
         data: {
             labels: years,
@@ -325,20 +320,20 @@ function createSequestrationChart(results, chartElementId) {
  */
 function resetForestUI() {
     // Hide results section
-    domUtils.hideElement(resultsSection);
+    domUtils.hideElement(window.appGlobals.forest.resultsSection);
     
     // Clear error messages
     clearForestErrors();
     
     // Destroy chart
-    if (sequestrationChart) {
-        sequestrationChart.destroy();
-        sequestrationChart = null;
+    if (window.appGlobals.forest.sequestrationChart) {
+        window.appGlobals.forest.sequestrationChart.destroy();
+        window.appGlobals.forest.sequestrationChart = null;
     }
     
     // Reset form
-    if (forestForm) {
-        forestForm.reset();
+    if (window.appGlobals.forest.form) {
+        window.appGlobals.forest.form.reset();
         setupFormFields(); // Restore default values
     }
 }

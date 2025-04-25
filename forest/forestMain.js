@@ -13,6 +13,12 @@ let lastResults = null;
 function initForestCalculator() {
     console.log('Initializing Forest Calculator');
     
+    // Initialize event system first to ensure it's available for all modules
+    if (window.forestCalcs && window.forestCalcs.eventSystem && !window.forestCalcs.eventSystem.initialized) {
+        window.forestCalcs.eventSystem.init();
+        console.log('Forest event system initialized');
+    }
+    
     // Initialize modules
     if (window.forestDOM) {
         window.forestDOM.init();
@@ -41,6 +47,12 @@ function initForestCalculator() {
  */
 function calculateForest(formData) {
     try {
+        // Ensure event system is initialized
+        if (!window.forestCalcs || !window.forestCalcs.eventSystem) {
+            console.error('Forest event system not initialized');
+            return null;
+        }
+        
         // Check if we have species data for multi-species mode
         const speciesData = window.forestIO?.getLoadedSpeciesData();
         const isMultiSpeciesMode = window.forestIO?.isMultiSpeciesMode();
@@ -63,8 +75,12 @@ function calculateForest(formData) {
             results
         );
         
-        // Trigger results event for UI update
-        window.forestCalcs.eventSystem.onResults(results);
+        // Trigger results event for UI update with defensive check
+        if (window.forestCalcs && window.forestCalcs.eventSystem) {
+            window.forestCalcs.eventSystem.onResults(results);
+        } else {
+            console.error('Forest event system not initialized');
+        }
         
         // Update cost analysis
         if (window.forestDOM) {
@@ -88,7 +104,14 @@ function calculateForest(formData) {
         return results;
     } catch (error) {
         console.error('Error calculating forest sequestration:', error);
-        window.forestCalcs.eventSystem.showError(`Calculation error: ${error.message}`, null);
+        
+        // Defensive check before showing error
+        if (window.forestCalcs && window.forestCalcs.eventSystem) {
+            window.forestCalcs.eventSystem.showError(`Calculation error: ${error.message}`, null);
+        } else {
+            console.error('Forest event system not initialized, cannot show error:', error.message);
+        }
+        
         return null;
     }
 }
@@ -100,8 +123,12 @@ function resetForest() {
     // Reset results
     lastResults = null;
     
-    // Trigger reset event
-    window.forestCalcs.eventSystem.onReset();
+    // Trigger reset event with defensive check
+    if (window.forestCalcs && window.forestCalcs.eventSystem) {
+        window.forestCalcs.eventSystem.onReset();
+    } else {
+        console.error('Forest event system not initialized, cannot trigger reset event');
+    }
 }
 
 /**
