@@ -144,6 +144,12 @@ function clearForestErrors() {
  * @param {object} results - Calculation results
  */
 function displayForestResults(results) {
+    // Check if the main results container exists
+    if (!window.appGlobals.forest.resultsSection) {
+        console.error('Forest results section element (ID: forest-results) not found in the DOM. Cannot display results.');
+        return; // Stop execution if the main container is missing
+    }
+    
     // Show the results section
     domUtils.showElement(window.appGlobals.forest.resultsSection);
     
@@ -153,8 +159,14 @@ function displayForestResults(results) {
     // Create or update sequestration chart
     createSequestrationChart(results, 'sequestration-chart');
     
-    // Update the results table
-    updateResultsTable(results.yearly);
+    // Check if the results table body exists before trying to update it
+    if (!window.appGlobals.forest.resultsBody) {
+        console.error('Forest results table body element (ID: forest-results-body) not found in the DOM. Cannot update table.');
+        // Optionally, display a message in the UI instead of just the console
+    } else {
+        // Update the results table only if the body element exists
+        updateResultsTable(results.yearly);
+    }
 }
 
 /**
