@@ -3,7 +3,7 @@
  * Handles all DOM-related functionality for the Forest calculator
  */
 
-// Remove local variable declarations - using globals instead
+// Removed redundant declaration of lastResults
 
 /**
  * Initialize Forest DOM module
@@ -15,21 +15,29 @@ function initForestDOM(options = {}) {
     window.appGlobals.forest.resultsSection = document.getElementById('forest-results');
     window.appGlobals.forest.resultsBody = document.getElementById('forest-results-body');
     window.appGlobals.forest.errorElement = document.getElementById('forest-error');
-    
+
+    // Ensure required elements exist
+    if (!window.appGlobals.forest.resultsSection) {
+        console.error('Forest results section element (ID: forest-results) is missing. Please check the HTML structure.');
+    }
+    if (!window.appGlobals.forest.resultsBody) {
+        console.error('Forest results table body element (ID: forest-results-body) is missing. Please check the HTML structure.');
+    }
+
     // Initialize the event system if it's not already
     if (!window.forestCalcs.eventSystem.initialized) {
         window.forestCalcs.eventSystem.init();
     }
-    
+
     // Set up form fields with defaults
     setupFormFields();
-    
+
     // Set up form validation
     setupFormValidation(window.appGlobals.forest.form);
-    
+
     // Register DOM callbacks with event system
     registerEventHandlers();
-    
+
     // Debug log to confirm initialization
     console.log('Forest DOM module initialized, event handlers registered');
 }
@@ -149,6 +157,9 @@ function displayForestResults(results) {
         console.error('Forest results section element (ID: forest-results) not found in the DOM. Cannot display results.');
         return; // Stop execution if the main container is missing
     }
+    
+    // Store results
+    window.appGlobals.lastForestResults = results;
     
     // Show the results section
     domUtils.showElement(window.appGlobals.forest.resultsSection);
@@ -397,5 +408,6 @@ window.forestDOM = {
     updateCarbonCredits,
     updateBiodiversity,
     updateBeneficiaries,
-    resetUI: resetForestUI
+    resetUI: resetForestUI,
+    getLastResults: () => window.appGlobals.lastForestResults // Update getter to reference global variable
 };

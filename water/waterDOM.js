@@ -3,7 +3,8 @@
  * Handles all DOM-related functionality for the Water calculator
  */
 
-// Remove variable declarations - using globals instead
+// Store last calculation results
+// Removed redundant declaration of lastResults
 
 /**
  * Initialize Water DOM module
@@ -15,20 +16,31 @@ function initWaterDOM(options = {}) {
     window.appGlobals.water.resultsSection = document.getElementById('water-results');
     window.appGlobals.water.resultsBody = document.getElementById('water-results-body');
     window.appGlobals.water.errorElement = document.getElementById('water-error');
-    
+
+    // Ensure required elements exist
+    if (!window.appGlobals.water.resultsSection) {
+        console.error('Water results section element (ID: water-results) is missing. Please check the HTML structure.');
+    }
+    if (!window.appGlobals.water.resultsBody) {
+        console.error('Water results table body element (ID: water-results-body) is missing. Please check the HTML structure.');
+    }
+
     // Initialize the event system if it's not already
     if (!window.waterCalcs.eventSystem.initialized) {
         window.waterCalcs.eventSystem.init();
     }
-    
+
     // Set up form fields with defaults
     setupFormFields();
-    
+
     // Set up form validation
     setupFormValidation(window.appGlobals.water.form);
-    
+
     // Register DOM callbacks with event system
     registerEventHandlers();
+
+    // Debug log to confirm initialization
+    console.log('Water DOM module initialized, event handlers registered');
 }
 
 /**
@@ -137,6 +149,9 @@ function clearWaterErrors() {
  * @param {object} results - Calculation results
  */
 function displayWaterResults(results) {
+    // Store results
+    window.appGlobals.lastWaterResults = results;
+    
     // Show the results section
     domUtils.showElement(window.appGlobals.water.resultsSection);
     
@@ -351,5 +366,6 @@ window.waterDOM = {
     updateCostAnalysis,
     updateEnvironmentalBenefits,
     updateBeneficiaries,
-    resetUI: resetWaterUI
+    resetUI: resetWaterUI,
+    getLastResults: () => window.appGlobals.lastWaterResults // Update getter to reference global variable
 };

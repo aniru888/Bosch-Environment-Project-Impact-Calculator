@@ -36,5 +36,9 @@ window.appGlobals = {
     }
 };
 
+// Global variables for storing the last calculation results
+window.appGlobals.lastForestResults = null;
+window.appGlobals.lastWaterResults = null;
+
 // Log initialization for debugging purposes
 console.log('Global namespaces initialized');
