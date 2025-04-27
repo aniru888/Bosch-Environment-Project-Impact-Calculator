@@ -215,35 +215,40 @@ function displayForestResults(results) {
  * @param {object} summary - Summary results
  */
 function updateSummaryMetrics(summary) {
-    // Directly pass values, assuming they are correct now due to timing fix
-    const totalCO2eValue = summary?.totalCO2e;
-    const avgAnnualCO2eValue = summary?.avgAnnualCO2e;
-    const finalCarbonStockValue = summary?.finalCarbonStock;
-
-    // Removed the specific value log from here
-
-    const totalCO2eElement = document.getElementById('total-co2e');
-    const avgAnnualCO2eElement = document.getElementById('avg-annual-co2e');
-    const finalCarbonElement = document.getElementById('final-carbon');
-
-    // Removed element finding logs from here
-
-    if (totalCO2eElement) {
-        domUtils.updateMetric('total-co2e', totalCO2eValue, 1);
-    } else {
-        console.error('Element with ID "total-co2e" not found in HTML');
+    if (!summary) {
+        console.error('No summary data received in updateSummaryMetrics');
+        return;
     }
 
-    if (avgAnnualCO2eElement) {
-        domUtils.updateMetric('avg-annual-co2e', avgAnnualCO2eValue, 1);
-    } else {
-        console.error('Element with ID "avg-annual-co2e" not found in HTML');
-    }
-
-    if (finalCarbonElement) {
-        domUtils.updateMetric('final-carbon', finalCarbonStockValue, 1);
-    } else {
-        console.error('Element with ID "final-carbon" not found in HTML');
+    // Extract values directly without fallbacks
+    const totalCO2eValue = summary.totalCO2e;
+    const avgAnnualCO2eValue = summary.avgAnnualCO2e;
+    const finalCarbonStockValue = summary.finalCarbonStock;
+    
+    // Update the DOM elements with formatted values
+    domUtils.updateMetric('total-co2e', totalCO2eValue, 2);
+    domUtils.updateMetric('avg-annual-co2e', avgAnnualCO2eValue, 2);
+    domUtils.updateMetric('final-carbon', finalCarbonStockValue, 2);
+    
+    // Also add a summary display in the results section
+    const summarySection = document.querySelector('.results-summary');
+    if (summarySection) {
+        const summaryHtml = `
+            <div class="summary-box">
+                <h4>Forest Carbon Summary</h4>
+                <p>Total CO₂e: <strong>${utils.formatNumber(totalCO2eValue, 2)} tonnes</strong></p>
+                <p>Average Annual CO₂e: <strong>${utils.formatNumber(avgAnnualCO2eValue, 2)} tonnes/year</strong></p>
+                <p>Final Carbon Stock: <strong>${utils.formatNumber(finalCarbonStockValue, 2)} tonnes</strong></p>
+            </div>
+        `;
+        
+        // Create or update the summary box
+        let summaryBox = summarySection.querySelector('.summary-box');
+        if (!summaryBox) {
+            summarySection.innerHTML += summaryHtml;
+        } else {
+            summaryBox.innerHTML = summaryHtml;
+        }
     }
 }
 
