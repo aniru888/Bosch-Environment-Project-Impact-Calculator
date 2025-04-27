@@ -334,36 +334,30 @@ function updateBeneficiaries(beneficiaries) {
  * Update the results table with yearly data
  * @param {Array} yearlyData - Array of yearly data objects
  */
-function updateForestResultsTable(yearlyData) { // RENAMED function
+function updateForestResultsTable(yearlyData) {
     // Clear existing rows
     domUtils.clearElement(window.appGlobals.forest.resultsBody);
     
     // Add rows for each year
     yearlyData.forEach(data => {
-        // Add safety checks for potentially missing data points within the loop
-        const year = data.year || 'N/A';
-        const survivingTrees = utils.formatNumber(data.survivingTrees, 0);
-        const growingStock = utils.formatNumber(data.growingStock, 1);
-        const carbonContent = utils.formatNumber(data.carbonContent, 1);
-        const co2e = utils.formatNumber(data.co2e, 1);
-        // Check annualIncrement specifically before formatting
-        const annualIncrementValue = data.annualIncrement;
-        const annualIncrement = utils.formatNumber(annualIncrementValue, 1);
-        const cumulativeCO2e = utils.formatNumber(data.cumulativeCO2e, 1);
+        // Ensure numeric values first, then format for display
+        const yearValue = data.year || 0;
+        const survivingTreesValue = Math.round(data.survivingTrees || 0);
+        const growingStockValue = data.growingStock || 0;
+        const carbonContentValue = data.carbonContent || 0;
+        const co2eValue = data.co2e || 0;
+        const annualIncrementValue = data.annualIncrement || 0;
+        const cumulativeCO2eValue = data.cumulativeCO2e || 0;
 
-        // Log if annualIncrement is problematic before formatting
-        if (annualIncrementValue === undefined || annualIncrementValue === null || isNaN(annualIncrementValue)) {
-             console.warn(`Year ${year}: annualIncrement is invalid:`, annualIncrementValue, 'Formatted as:', annualIncrement);
-        }
-
+        // Format values for display
         const row = domUtils.createTableRow([
-            year,
-            survivingTrees,
-            growingStock,
-            carbonContent,
-            co2e,
-            annualIncrement, // Pass the formatted (or '0') value
-            cumulativeCO2e
+            yearValue,
+            survivingTreesValue,
+            utils.formatNumber(growingStockValue, 1),
+            utils.formatNumber(carbonContentValue, 1),
+            utils.formatNumber(co2eValue, 1),
+            utils.formatNumber(annualIncrementValue, 1),
+            utils.formatNumber(cumulativeCO2eValue, 1)
         ]);
         
         window.appGlobals.forest.resultsBody.appendChild(row);
