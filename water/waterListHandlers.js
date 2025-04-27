@@ -110,7 +110,11 @@ function handleWaterFormSubmit(event) {
     
     // Validate all required inputs
     const allInputsValid = validateAllInputs();
-    if (!allInputsValid) return;
+    if (!allInputsValid) {
+        // Remove loading indicator if validation fails
+        document.body.classList.remove('loading');
+        return;
+    }
     
     // Collect form data and calculate
     const formData = window.waterIO.parseFormData(window.appGlobals.water.form);

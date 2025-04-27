@@ -210,15 +210,22 @@ function displayForestResults(results) {
     updateForestResultsTable(results.yearly);
 
     // Create or update sequestration chart
-    createSequestrationChart(results, 'sequestration-chart'); // Corrected ID to match index.html
+    createSequestrationChart(results, 'sequestration-chart');
 
-    // Update enhanced sections (cost, credits, biodiversity, beneficiaries)
-    // These functions should handle their own display logic if needed
-    const carbonPrice = parseFloat(window.appGlobals.forest.carbonPriceInput?.value) || 5;
-    updateCostAnalysis(results.costAnalysis);
-    updateCarbonCredits(results.summary.totalCO2e, carbonPrice);
-    updateBiodiversity(results.biodiversity);
-    updateBeneficiaries(results.beneficiaries);
+    // Update enhanced sections only if results contain the data
+    if (results.costAnalysis) {
+        updateCostAnalysis(results.costAnalysis);
+    }
+    if (results.summary) {
+        const carbonPrice = parseFloat(window.appGlobals.forest.carbonPriceInput?.value) || 5;
+        updateCarbonCredits(results.summary.totalCO2e, carbonPrice);
+    }
+    if (results.biodiversity) {
+        updateBiodiversity(results.biodiversity);
+    }
+    if (results.beneficiaries) {
+        updateBeneficiaries(results.beneficiaries);
+    }
 
     // Remove loading indicator AFTER results are displayed
     document.body.classList.remove('loading');

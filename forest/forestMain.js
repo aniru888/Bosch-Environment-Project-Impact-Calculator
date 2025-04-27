@@ -119,14 +119,16 @@ function calculateForest(formData) {
         // Update cost analysis and other UI elements directly
         if (window.forestDOM) {
             // Make direct calls to DOM update functions with explicit arguments
-            window.forestDOM.updateCostAnalysis(costAnalysis);
+            // Ensure we're using the forest DOM module specifically
+            const forestDOM = window.forestDOM;
+            forestDOM.updateCostAnalysis(costAnalysis);
             
             // Get carbon price from formData
             const carbonPrice = formData.carbonPrice || 5;
-            window.forestDOM.updateCarbonCredits(results.summary.totalCO2e, carbonPrice);
+            forestDOM.updateCarbonCredits(results.summary.totalCO2e, carbonPrice);
             
             // Force display of results in case event system fails
-            window.forestDOM.displayResults(results);
+            forestDOM.displayResults(results);
         }
         
         // Update enhanced features

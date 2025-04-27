@@ -143,6 +143,8 @@ function calculateWaterImpact(form) {
     } catch (error) {
         console.error('Error calculating water impact:', error);
         handleError(`Calculation error: ${error.message}`);
+        // Remove loading indicator on error
+        document.body.classList.remove('loading');
         return null;
     }
 }
