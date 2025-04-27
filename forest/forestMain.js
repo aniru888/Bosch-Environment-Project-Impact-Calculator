@@ -66,9 +66,34 @@ function calculateForest(formData) {
         } else {
             results = window.forestCalcs.calculateSequestration(formData);
         }
+
+        // SIMPLIFIED APPROACH: Clean up results to ensure it has a proper summary structure
+        if (!results) {
+            throw new Error('Calculation produced no results');
+        }
+
+        // Ensure summary exists - this is critical
+        if (!results.summary) {
+            console.error('Creating missing summary property');
+            results.summary = {
+                totalCO2e: 0,
+                avgAnnualCO2e: 0,
+                finalCarbonStock: 0
+            };
+            
+            // Try to extract from yearly data if available
+            if (results.yearly && results.yearly.length > 0) {
+                const finalYear = results.yearly[results.yearly.length - 1];
+                if (finalYear) {
+                    results.summary.totalCO2e = finalYear.cumulativeCO2e || 0;
+                    results.summary.avgAnnualCO2e = finalYear.cumulativeCO2e / formData.projectDuration || 0;
+                    results.summary.finalCarbonStock = finalYear.carbonContent || 0;
+                }
+            }
+        }
         
-        // Store results
-        lastResults = results;
+        // Store original results directly in global state
+        window.appGlobals.lastForestResults = results;
         
         // Calculate cost analysis
         const costAnalysis = window.forestCalcs.calculateForestCostAnalysis(
@@ -77,24 +102,31 @@ function calculateForest(formData) {
             results
         );
 
-        // --- DEBUGGING START ---
-        console.log('Calculation results:', results);
-        // --- DEBUGGING END ---
+        // Display diagnostics
+        console.log('Final results structure:', {
+            hasResults: !!results,
+            hasSummary: !!results?.summary,
+            summary: results?.summary
+        });
 
-        // Trigger results event for UI update with defensive check
+        // Trigger results event for UI update
         if (window.forestCalcs && window.forestCalcs.eventSystem) {
             window.forestCalcs.eventSystem.onResults(results);
         } else {
             console.error('Forest event system not initialized');
         }
         
-        // Update cost analysis
+        // Update cost analysis and other UI elements directly
         if (window.forestDOM) {
+            // Make direct calls to DOM update functions with explicit arguments
             window.forestDOM.updateCostAnalysis(costAnalysis);
             
             // Get carbon price from formData
             const carbonPrice = formData.carbonPrice || 5;
             window.forestDOM.updateCarbonCredits(results.summary.totalCO2e, carbonPrice);
+            
+            // Force display of results in case event system fails
+            window.forestDOM.displayResults(results);
         }
         
         // Update enhanced features
@@ -102,8 +134,8 @@ function calculateForest(formData) {
             window.forestEnhanced.updateAllEnhancedFeatures(formData, results, speciesData);
         }
         
-        // Track calculation in analytics
-        if (window.analytics) {
+        // Track calculation in analytics - ensure summary object is passed correctly
+        if (window.analytics && results && results.summary) {
             window.analytics.trackCalculation('Forest', formData, results.summary);
         }
         

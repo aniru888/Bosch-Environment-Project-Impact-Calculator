@@ -7,8 +7,7 @@ const analytics = {
      * Initialize analytics
      */
     init() {
-        this.events = [];
-        console.log('Analytics initialized');
+        console.log('Analytics system initialized');
     },
     
     /**
@@ -18,17 +17,13 @@ const analytics = {
      * @param {object} data - Additional event data
      */
     trackEvent(category, action, data = {}) {
-        const event = {
-            category,
-            action,
-            data,
-            timestamp: new Date().toISOString()
-        };
+        // In a real implementation, this would send the event to an analytics service
+        console.log(`[Analytics] Event tracked: ${category} - ${action}`);
         
-        this.events.push(event);
-        console.log(`Analytics event tracked: ${category} - ${action}`, data);
-        
-        // In a real implementation, you might send this to a server or analytics service
+        // Log data if present
+        if (Object.keys(data).length > 0) {
+            console.log('[Analytics] Event data:', data);
+        }
     },
     
     /**
@@ -38,9 +33,12 @@ const analytics = {
      * @param {object} results - Calculation results summary
      */
     trackCalculation(module, inputs, results) {
+        // Simple safeguard to ensure results exist before sanitizing
+        const sanitizedResults = results ? this._sanitizeResults(results) : {};
+        
         this.trackEvent(module, 'Calculate', {
             inputs: this._sanitizeInputs(inputs),
-            resultsSummary: this._sanitizeResults(results)
+            resultsSummary: sanitizedResults
         });
     },
     
@@ -74,12 +72,23 @@ const analytics = {
      */
     _sanitizeResults(results) {
         // Return only summary metrics for tracking
-        if (!results || !results.summary) return {};
-        return results.summary;
+        // Added safety check to handle both direct summary objects and objects containing summary property
+        if (!results) return {};
+        
+        // If results is already a summary object (has totalCO2e, etc), return it directly
+        if (results.totalCO2e !== undefined || results.annualWaterCaptured !== undefined) {
+            return results;
+        }
+        
+        // If results has a summary property, return that
+        if (results.summary) {
+            return results.summary;
+        }
+        
+        // If we couldn't find summary data, return an empty object
+        return {};
     }
 };
 
-// Initialize analytics
-document.addEventListener('DOMContentLoaded', () => {
-    analytics.init();
-});
+// Register analytics globally
+window.analytics = analytics;

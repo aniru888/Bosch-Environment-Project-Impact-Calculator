@@ -6,6 +6,32 @@
 // Removed redundant declaration of lastResults
 
 /**
+ * Ensure the results structure is consistent before using
+ * @param {object} results - Calculation results 
+ * @returns {object} - Results with verified structure
+ * @private
+ */
+function _ensureResultsIntegrity(results) {
+    if (!results) return null;
+    
+    // Create a deep copy to avoid modifying the original
+    const safeCopy = JSON.parse(JSON.stringify(results));
+    
+    // Ensure summary exists
+    if (!safeCopy.summary) {
+        console.error('Results missing summary property, creating it');
+        safeCopy.summary = {
+            totalCO2e: 0,
+            avgAnnualCO2e: 0,
+            finalCarbonStock: 0
+        };
+    }
+    
+    // Return the verified results
+    return safeCopy;
+}
+
+/**
  * Initialize Forest DOM module
  * @param {object} options - Configuration options
  */
@@ -163,6 +189,8 @@ function clearForestErrors() {
  * @param {object} results - Calculation results
  */
 function displayForestResults(results) {
+    results = _ensureResultsIntegrity(results); // Ensure results integrity before using
+
     if (!results) {
         console.error('No results to display');
         showForestError('Calculation failed or produced no results.');
@@ -209,36 +237,41 @@ function updateSummaryMetrics(summary) {
     // Log the summary object to help debug
     console.log('Summary data received:', summary);
 
-    // Extract values with proper property names
-    // Only use fallbacks for undefined values, not for zero values
-    const totalCO2eValue = summary.totalCO2e !== undefined ? summary.totalCO2e : 0;
-    const avgAnnualCO2eValue = summary.avgAnnualCO2e !== undefined ? summary.avgAnnualCO2e : 0;
-    const finalCarbonStockValue = summary.finalCarbonStock !== undefined ? summary.finalCarbonStock : 0;
+    // Extract values with proper property names - with explicit fallbacks to zero
+    const totalCO2eValue = summary.totalCO2e ?? 0;
+    const avgAnnualCO2eValue = summary.avgAnnualCO2e ?? 0;
+    const finalCarbonStockValue = summary.finalCarbonStock ?? 0;
     
-    // Update the DOM elements with formatted values
-    domUtils.updateMetric('total-co2e', totalCO2eValue, 2);
-    domUtils.updateMetric('avg-annual-co2e', avgAnnualCO2eValue, 2);
-    domUtils.updateMetric('final-carbon', finalCarbonStockValue, 2);
-    
-    // Also add a summary display in the results section
-    const summarySection = document.querySelector('.results-summary');
-    if (summarySection) {
-        const summaryHtml = `
-            <div class="summary-box">
-                <h4>Forest Carbon Summary</h4>
-                <p>Total CO₂e: <strong>${utils.formatNumber(totalCO2eValue, 2)} tonnes</strong></p>
-                <p>Average Annual CO₂e: <strong>${utils.formatNumber(avgAnnualCO2eValue, 2)} tonnes/year</strong></p>
-                <p>Final Carbon Stock: <strong>${utils.formatNumber(finalCarbonStockValue, 2)} tonnes</strong></p>
-            </div>
-        `;
+    // DIRECT APPROACH: Update the DOM elements with formatted values
+    try {
+        // Get elements directly by ID with error handling
+        const totalCO2eElement = document.getElementById('total-co2e');
+        const avgAnnualCO2eElement = document.getElementById('avg-annual-co2e');
+        const finalCarbonElement = document.getElementById('final-carbon');
         
-        // Create or update the summary box
-        let summaryBox = summarySection.querySelector('.summary-box');
-        if (!summaryBox) {
-            summarySection.innerHTML += summaryHtml;
-        } else {
-            summaryBox.innerHTML = summaryHtml;
+        if (totalCO2eElement) totalCO2eElement.textContent = utils.formatNumber(totalCO2eValue, 2);
+        if (avgAnnualCO2eElement) avgAnnualCO2eElement.textContent = utils.formatNumber(avgAnnualCO2eValue, 2);
+        if (finalCarbonElement) finalCarbonElement.textContent = utils.formatNumber(finalCarbonStockValue, 2);
+        
+        console.log('Summary metrics updated directly in DOM');
+    } catch (err) {
+        console.error('Error updating summary metrics directly:', err);
+        
+        // Fallback to using domUtils
+        try {
+            domUtils.updateMetric('total-co2e', totalCO2eValue, 2);
+            domUtils.updateMetric('avg-annual-co2e', avgAnnualCO2eValue, 2);
+            domUtils.updateMetric('final-carbon', finalCarbonStockValue, 2);
+            console.log('Summary metrics updated using domUtils');
+        } catch (err2) {
+            console.error('Both direct and domUtils updates failed:', err2);
         }
+    }
+    
+    // Optional: Make the results section visible if it's hidden
+    const resultsSection = document.getElementById('forest-results');
+    if (resultsSection) {
+        resultsSection.style.display = 'block';
     }
 }
 
