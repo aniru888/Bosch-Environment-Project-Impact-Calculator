@@ -78,12 +78,10 @@ const domUtils = {
     updateMetric(elementId, value, decimals = 0) {
         const element = document.getElementById(elementId);
         if (element) {
-            // Log the value before formatting
-            console.log(`[domUtils.updateMetric] Formatting value for #${elementId}:`, value);
+            console.log(`[domUtils.updateMetric] Found element #${elementId}, setting value:`, value, 'decimals:', decimals);
             element.textContent = utils.formatNumber(value, decimals);
         } else {
-            // Log if element not found, as this could lead to silent failures
-            console.warn(`[domUtils.updateMetric] Element with ID "${elementId}" not found.`);
+            console.warn(`[domUtils.updateMetric] Element with ID "${elementId}" not found at update time! Value:`, value);
         }
     },
     
