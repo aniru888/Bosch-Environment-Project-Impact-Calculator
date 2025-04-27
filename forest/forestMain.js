@@ -48,6 +48,8 @@ function initForestCalculator() {
  */
 function calculateForest(formData) {
     try {
+        console.log('Starting forest calculation...');
+        
         // Ensure event system is initialized
         if (!window.forestCalcs || !window.forestCalcs.eventSystem) {
             console.error('Forest event system not initialized');
@@ -57,6 +59,7 @@ function calculateForest(formData) {
         // Check if we have species data for multi-species mode
         const speciesData = window.forestIO?.getLoadedSpeciesData();
         const isMultiSpeciesMode = window.forestIO?.isMultiSpeciesMode();
+        console.log('Multi-species mode:', isMultiSpeciesMode, 'Species data:', !!speciesData);
         
         // Perform calculation
         let results;
@@ -65,6 +68,7 @@ function calculateForest(formData) {
         } else {
             results = window.forestCalcs.calculateSequestration(formData);
         }
+        console.log('Calculation completed, results:', results);
         
         // Store results in global variable
         window.appGlobals.lastForestResults = results;
@@ -77,6 +81,7 @@ function calculateForest(formData) {
         );
 
         // Trigger results event - this will update the UI through the event system
+        console.log('Triggering results event...');
         window.forestCalcs.eventSystem.onResults(results);
         
         // Update cost analysis

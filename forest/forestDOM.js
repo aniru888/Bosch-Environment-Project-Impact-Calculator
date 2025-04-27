@@ -99,19 +99,32 @@ function validateInput(input) {
  * Register event handlers with the event system
  */
 function registerEventHandlers() {
+    console.log('Registering forest DOM event handlers...');
+    
+    if (!window.forestCalcs || !window.forestCalcs.eventSystem) {
+        console.error('Forest event system not available for event registration');
+        return;
+    }
+
     // Register error handler
     window.forestCalcs.eventSystem.on('error', ({ message, element }) => {
+        console.log('Error event received:', message);
         showForestError(message, element);
     });
     
     // Register results handler
     window.forestCalcs.eventSystem.on('results', (results) => {
         console.log('Results event received in forestDOM:', results);
+        if (!results) {
+            console.error('Received empty results');
+            return;
+        }
         displayForestResults(results);
     });
     
     // Register reset handler
     window.forestCalcs.eventSystem.on('reset', () => {
+        console.log('Reset event received');
         resetForestUI();
     });
     
@@ -156,6 +169,8 @@ function clearForestErrors() {
  * @param {object} results - Calculation results
  */
 function displayForestResults(results) {
+    console.log('Displaying forest results:', results);
+    
     // Check if the main results container exists
     if (!window.appGlobals.forest.resultsSection) {
         console.error('Forest results section element (ID: forest-results) not found in the DOM. Cannot display results.');
@@ -166,6 +181,7 @@ function displayForestResults(results) {
     window.appGlobals.lastForestResults = results;
     
     // Show the results section
+    console.log('Showing results section');
     domUtils.showElement(window.appGlobals.forest.resultsSection);
     
     // Make sure we have valid data
@@ -196,11 +212,11 @@ function displayForestResults(results) {
     // Check if the results table body exists before trying to update it
     if (!window.appGlobals.forest.resultsBody) {
         console.error('Forest results table body element (ID: forest-results-body) not found in the DOM. Cannot update table.');
-        // Optionally, display a message in the UI instead of just the console
     } else {
         // Update the results table only if the body element exists
         updateResultsTable(results.yearly);
     }
+    console.log('Results display completed');
 }
 
 /**

@@ -7,6 +7,8 @@ class AppMain {
     }
     
     init() {
+        console.log('Initializing application...');
+        
         // First check if required globals are available
         if (!window.appGlobals) {
             console.error('Global namespace not initialized. Please ensure globals.js is loaded first.');
@@ -20,11 +22,17 @@ class AppMain {
         }
 
         // Initialize event systems globally
-        window.initializeEventSystems();
+        if (!window.initializeEventSystems()) {
+            console.error('Failed to initialize event systems');
+            return;
+        }
         console.log('Event systems initialized');
         
         // Initialize modules in correct order
-        this._registerModules();
+        if (!this._registerModules()) {
+            console.error('Failed to register modules');
+            return;
+        }
         
         // Setup UI only after modules are ready
         this._setupTabNavigation();
@@ -82,6 +90,8 @@ class AppMain {
     
     _registerModules() {
         try {
+            console.log('Registering modules...');
+            
             // Initialize forest calculator module
             if (window.forestMain && typeof window.forestMain.init === 'function') {
                 this.modules.forest = window.forestMain.init();
@@ -92,6 +102,7 @@ class AppMain {
                 console.log('Forest module registered successfully');
             } else {
                 console.error('Forest calculator module not found or initialization function missing');
+                return false;
             }
             
             // Initialize water calculator module
@@ -103,6 +114,7 @@ class AppMain {
                 console.log('Water module registered successfully');
             } else {
                 console.error('Water calculator module not found or initialization function missing');
+                return false;
             }
 
             // Add tab change handlers to reset forms when switching tabs
@@ -124,10 +136,11 @@ class AppMain {
                     }
                 });
             }
-
+            
+            return true;
         } catch (error) {
             console.error('Error during module registration:', error);
-            throw error;
+            return false;
         }
     }
 }

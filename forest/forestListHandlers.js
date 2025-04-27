@@ -77,13 +77,16 @@ function validateInput(input) {
  */
 function handleForestFormSubmit(event) {
     event.preventDefault();
+    console.log('Form submission handler triggered');
     
     // Validate all required inputs
     const allInputsValid = validateAllInputs();
+    console.log('Form validation result:', allInputsValid);
     if (!allInputsValid) return;
     
     // Collect form data
     const formData = collectForestFormData();
+    console.log('Collected form data:', formData);
     
     // Send to main calculation function
     window.forestMain?.calculateForest(formData);
