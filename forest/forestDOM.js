@@ -10,6 +10,12 @@
  * @param {object} options - Configuration options
  */
 function initForestDOM(options = {}) {
+    // Verify global initialization state
+    if (!window._initializationState.eventSystemsInitialized) {
+        console.error('Event systems must be initialized before Forest DOM module');
+        return false;
+    }
+
     // Get DOM elements
     window.appGlobals.forest.form = document.getElementById('forest-form');
     window.appGlobals.forest.resultsSection = document.getElementById('forest-results');
@@ -19,14 +25,11 @@ function initForestDOM(options = {}) {
     // Ensure required elements exist
     if (!window.appGlobals.forest.resultsSection) {
         console.error('Forest results section element (ID: forest-results) is missing. Please check the HTML structure.');
+        return false;
     }
     if (!window.appGlobals.forest.resultsBody) {
         console.error('Forest results table body element (ID: forest-results-body) is missing. Please check the HTML structure.');
-    }
-
-    // Initialize the event system if it's not already
-    if (!window.forestCalcs.eventSystem.initialized) {
-        window.forestCalcs.eventSystem.init();
+        return false;
     }
 
     // Set up form fields with defaults
@@ -40,6 +43,7 @@ function initForestDOM(options = {}) {
 
     // Debug log to confirm initialization
     console.log('Forest DOM module initialized, event handlers registered');
+    return true;
 }
 
 /**
@@ -95,19 +99,32 @@ function validateInput(input) {
  * Register event handlers with the event system
  */
 function registerEventHandlers() {
+    console.log('Registering forest DOM event handlers...');
+    
+    if (!window.forestCalcs || !window.forestCalcs.eventSystem) {
+        console.error('Forest event system not available for event registration');
+        return;
+    }
+
     // Register error handler
     window.forestCalcs.eventSystem.on('error', ({ message, element }) => {
+        console.log('Error event received:', message);
         showForestError(message, element);
     });
     
     // Register results handler
     window.forestCalcs.eventSystem.on('results', (results) => {
         console.log('Results event received in forestDOM:', results);
+        if (!results) {
+            console.error('Received empty results');
+            return;
+        }
         displayForestResults(results);
     });
     
     // Register reset handler
     window.forestCalcs.eventSystem.on('reset', () => {
+        console.log('Reset event received');
         resetForestUI();
     });
     
@@ -152,6 +169,11 @@ function clearForestErrors() {
  * @param {object} results - Calculation results
  */
 function displayForestResults(results) {
+    console.log('displayForestResults called with:', results);
+    console.log('Results summary exists:', !!results?.summary);
+    console.log('Results yearly exists:', !!results?.yearly);
+    console.log('Results section element exists:', !!window.appGlobals.forest.resultsSection);
+    
     // Check if the main results container exists
     if (!window.appGlobals.forest.resultsSection) {
         console.error('Forest results section element (ID: forest-results) not found in the DOM. Cannot display results.');
@@ -162,26 +184,14 @@ function displayForestResults(results) {
     window.appGlobals.lastForestResults = results;
     
     // Show the results section
+    console.log('Showing results section');
     domUtils.showElement(window.appGlobals.forest.resultsSection);
     
     // Make sure we have valid data
-    if (!results || !results.yearly || results.yearly.length === 0) {
-        showForestError('No calculation results to display.');
+    if (!results || !results.yearly || results.yearly.length === 0 || !results.summary) {
+        showForestError('No calculation results or summary to display.');
         return;
     }
-    
-    // Get data from the final year row for summary (in case summary wasn't properly calculated)
-    const finalYearData = results.yearly[results.yearly.length - 1];
-    
-    // Update summary with values from final row if needed
-    if (!results.summary) {
-        results.summary = {};
-    }
-    
-    // Ensure summary has the correct values from final row
-    results.summary.totalCO2e = finalYearData.cumulativeCO2e;
-    results.summary.avgAnnualCO2e = finalYearData.cumulativeCO2e / results.yearly.length;
-    results.summary.finalCarbonStock = finalYearData.carbonContent;
     
     // Update summary metrics
     updateSummaryMetrics(results.summary);
@@ -192,11 +202,11 @@ function displayForestResults(results) {
     // Check if the results table body exists before trying to update it
     if (!window.appGlobals.forest.resultsBody) {
         console.error('Forest results table body element (ID: forest-results-body) not found in the DOM. Cannot update table.');
-        // Optionally, display a message in the UI instead of just the console
     } else {
         // Update the results table only if the body element exists
         updateResultsTable(results.yearly);
     }
+    console.log('Results display completed');
 }
 
 /**
@@ -204,9 +214,30 @@ function displayForestResults(results) {
  * @param {object} summary - Summary results
  */
 function updateSummaryMetrics(summary) {
-    domUtils.updateMetric('total-co2e', summary.totalCO2e, 1);
-    domUtils.updateMetric('avg-annual-co2e', summary.avgAnnualCO2e, 1);
-    domUtils.updateMetric('final-carbon', summary.finalCarbonStock, 1);
+    console.log('Updating summary metrics with:', summary);
+    
+    // Check if the elements exist before updating
+    const totalCO2eElement = document.getElementById('total-co2e');
+    const avgAnnualCO2eElement = document.getElementById('avg-annual-co2e');
+    const finalCarbonElement = document.getElementById('final-carbon');
+    
+    if (!totalCO2eElement) {
+        console.error('Element with ID "total-co2e" not found in HTML');
+    } else {
+        domUtils.updateMetric('total-co2e', summary.totalCO2e, 1);
+    }
+    
+    if (!avgAnnualCO2eElement) {
+        console.error('Element with ID "avg-annual-co2e" not found in HTML');
+    } else {
+        domUtils.updateMetric('avg-annual-co2e', summary.avgAnnualCO2e, 1);
+    }
+    
+    if (!finalCarbonElement) {
+        console.error('Element with ID "final-carbon" not found in HTML');
+    } else {
+        domUtils.updateMetric('final-carbon', summary.finalCarbonStock, 1);
+    }
 }
 
 /**
@@ -303,15 +334,21 @@ function createSequestrationChart(results, chartElementId) {
         window.appGlobals.forest.sequestrationChart.destroy();
     }
     
+    // Set proper chart dimensions
+    const chartContainer = chartElement.parentElement;
+    if (chartContainer) {
+        chartContainer.style.height = '400px';
+        chartContainer.style.width = '100%';
+    }
+    chartElement.style.height = '100%';
+    chartElement.style.width = '100%';
+    
     // Prepare data with safety checks
     const years = results.yearly.map(data => `Year ${data.year || 0}`);
     const co2eData = results.yearly.map(data => data.co2e || 0);
     const annualIncrementData = results.yearly.map(data => data.annualIncrement || 0);
     
     console.log('Chart data prepared:', {years, co2eData, annualIncrementData}); // Debug
-    
-    // Create new chart with fixed dimensions
-    chartElement.style.height = '300px'; // Ensure canvas has height
     
     try {
         window.appGlobals.forest.sequestrationChart = new Chart(chartElement, {
@@ -379,8 +416,11 @@ function createSequestrationChart(results, chartElementId) {
  * Reset the forest UI
  */
 function resetForestUI() {
-    // Hide results section
-    domUtils.hideElement(window.appGlobals.forest.resultsSection);
+    // Instead of hiding, just clear the content but keep it visible
+    domUtils.clearElement(document.getElementById('forest-results-table-body'));
+    domUtils.clearElement(document.getElementById('total-co2e'));
+    domUtils.clearElement(document.getElementById('avg-annual-co2e'));
+    domUtils.clearElement(document.getElementById('final-carbon'));
     
     // Clear error messages
     clearForestErrors();

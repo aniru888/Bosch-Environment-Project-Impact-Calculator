@@ -3,33 +3,43 @@
  * Coordinates the water calculation components and manages the application flow
  */
 
-// Store the last calculation results
-let lastWaterResults = null;
-
 /**
  * Initialize the Water module
+ * @returns {Object} - Water calculator interface
  */
 function initWater() {
-    // Initialize the calculation module
-    if (window.waterCalcs && window.waterCalcs.eventSystem) {
-        window.waterCalcs.eventSystem.init();
-    }
+    console.log('Initializing Water Calculator');
     
-    // Initialize the DOM module
+    // Use the globally initialized event system
+    window.initializeEventSystems();
+    
+    // Initialize modules in the correct order
+    // DOM module needs to be initialized first since other modules may depend on it
     if (window.waterDOM) {
         window.waterDOM.init();
+        console.log('Water DOM module initialized');
+    } else {
+        console.error('Water DOM module not available');
     }
     
-    // Initialize the IO module
+    // Next initialize IO and List Handlers
     if (window.waterIO) {
         window.waterIO.init();
+        console.log('Water IO module initialized');
     }
     
-    // Set up form submission handler
-    setupWaterFormHandler();
+    if (window.waterListHandlers) {
+        window.waterListHandlers.init();
+        console.log('Water List Handlers module initialized');
+    }
     
-    // Set up reset button handler
-    setupWaterResetHandler();
+    // Return interface for external access
+    return {
+        name: 'Water Calculator',
+        calculate: calculateWaterImpact,
+        reset: resetWaterCalculator,
+        getLastResults
+    };
 }
 
 /**
@@ -79,6 +89,9 @@ function calculateWaterImpact(form) {
         // Calculate water capture
         const results = window.waterCalcs.calculateWaterCapture(formData);
         
+        // Store results in global variable
+        window.appGlobals.lastWaterResults = results;
+        
         // Calculate cost analysis
         const costAnalysis = window.waterCalcs.calculateWaterCostAnalysis(
             formData.waterProjectCost,
@@ -97,24 +110,27 @@ function calculateWaterImpact(form) {
             formData,
             results
         );
+
+        // Trigger results event through the event system
+        window.waterCalcs.eventSystem.onResults(results);
         
-        // Store results
-        lastWaterResults = {
-            ...results,
-            costAnalysis,
-            environmentalBenefits,
-            beneficiaries
-        };
+        // Update UI components through DOM module
+        if (window.waterDOM) {
+            window.waterDOM.updateCostAnalysis(costAnalysis);
+            window.waterDOM.updateEnvironmentalBenefits(environmentalBenefits);
+            window.waterDOM.updateBeneficiaries(beneficiaries);
+        }
         
-        // Update UI with results
-        displayResults(results, costAnalysis, environmentalBenefits, beneficiaries);
-        
-        // Track the calculation
+        // Track calculation in analytics
         if (window.analytics) {
             window.analytics.trackCalculation('Water', formData, results.summary);
         }
+        
+        return results;
     } catch (error) {
+        console.error('Error calculating water impact:', error);
         handleError(`Calculation error: ${error.message}`);
+        return null;
     }
 }
 
@@ -222,15 +238,14 @@ function handleError(message) {
  * Reset the water calculator
  */
 function resetWaterCalculator() {
-    lastWaterResults = null;
+    // Reset results in global state
+    window.appGlobals.lastWaterResults = null;
     
-    if (window.waterDOM) {
-        window.waterDOM.resetUI();
-    }
-    
-    // Trigger reset event
+    // Trigger reset event through the event system
     if (window.waterCalcs && window.waterCalcs.eventSystem) {
         window.waterCalcs.eventSystem.onReset();
+    } else {
+        console.error('Water event system not initialized, cannot trigger reset event');
     }
 }
 
@@ -239,7 +254,7 @@ function resetWaterCalculator() {
  * @returns {object|null} - Last calculation results or null if none
  */
 function getLastResults() {
-    return lastWaterResults;
+    return window.appGlobals.lastWaterResults;
 }
 
 // Export the API via window object
@@ -247,5 +262,5 @@ window.waterMain = {
     init: initWater,
     calculate: calculateWaterImpact,
     reset: resetWaterCalculator,
-    getLastResults: getLastResults
+    getLastResults
 };
