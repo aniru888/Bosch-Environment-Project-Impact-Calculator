@@ -152,9 +152,6 @@ function displayWaterResults(results) {
     // Store results
     window.appGlobals.lastWaterResults = results;
     
-    // Show the results section
-    domUtils.showElement(window.appGlobals.water.resultsSection);
-    
     // Update summary metrics
     updateSummaryMetrics(results.summary);
     
@@ -352,9 +349,6 @@ function createWaterCaptureChart(results, chartElementId) {
  * Reset the water UI
  */
 function resetWaterUI() {
-    // Hide results section
-    domUtils.hideElement(window.appGlobals.water.resultsSection);
-    
     // Clear error messages
     clearWaterErrors();
     

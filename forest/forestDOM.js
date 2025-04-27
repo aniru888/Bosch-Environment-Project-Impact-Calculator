@@ -140,7 +140,6 @@ function registerEventHandlers() {
 function showForestError(message, element) {
     if (window.appGlobals.forest.errorElement) {
         window.appGlobals.forest.errorElement.textContent = message;
-        // Removed call to domUtils.showElement
     }
     if (element) {
         element.classList.add('is-invalid'); // Add validation class if applicable
@@ -153,7 +152,6 @@ function showForestError(message, element) {
 function clearForestErrors() {
     if (window.appGlobals.forest.errorElement) {
         window.appGlobals.forest.errorElement.textContent = '';
-        // Removed call to domUtils.hideElement
     }
     // Remove validation classes from all inputs if needed
     const inputs = window.appGlobals.forest.form?.querySelectorAll('input');
@@ -176,7 +174,6 @@ function displayForestResults(results) {
 
     // Ensure results section is visible
     if (window.appGlobals.forest.resultsSection) {
-        // Removed call to domUtils.showElement
         window.appGlobals.forest.resultsSection.style.display = 'block'; // Ensure it's visible
     } else {
         console.error('Results section not found');
@@ -463,7 +460,6 @@ function resetForestUI() {
 
     // Hide results section (optional, could just leave it empty)
     // if (window.appGlobals.forest.resultsSection) {
-    //     // Removed call to domUtils.hideElement
     //     window.appGlobals.forest.resultsSection.style.display = 'none'; // Hide it directly
     // }
 

@@ -43,9 +43,6 @@ function setupGreenCoverAndCredits(speciesData) {
     function updateGreenCoverMetrics(inputs) {
         if (!greenCoverSection) return;
         
-        // Show green cover section
-        domUtils.showElement(greenCoverSection);
-        
         // Calculate final green cover based on area and planting density
         // This is a simplified model assuming each mature tree covers ~25m²
         const { area, plantingDensity, mortalityRate, projectDuration } = inputs;
@@ -73,9 +70,6 @@ function setupGreenCoverAndCredits(speciesData) {
      */
     function updateCarbonCreditsCalculation(results) {
         if (!carbonCreditsSection) return;
-        
-        // Show carbon credits section
-        domUtils.showElement(carbonCreditsSection);
         
         // Get carbon price and risk buffer from inputs
         const carbonPrice = parseFloat(document.getElementById('forest-carbon-price')?.value) || 5;
@@ -171,7 +165,6 @@ function updateAllEnhancedFeatures(inputs, results, speciesData) {
     const biodiversity = calculateBiodiversityEnhancement(inputs, speciesData);
     const biodiversitySection = document.getElementById('biodiversity-section');
     if (biodiversitySection) {
-        domUtils.showElement(biodiversitySection);
         forestDOM.updateBiodiversity(biodiversity);
     }
     
@@ -179,7 +172,6 @@ function updateAllEnhancedFeatures(inputs, results, speciesData) {
     const beneficiaries = calculateBeneficiaries(inputs);
     const beneficiariesSection = document.getElementById('beneficiaries-section');
     if (beneficiariesSection) {
-        domUtils.showElement(beneficiariesSection);
         forestDOM.updateBeneficiaries(beneficiaries);
     }
 }
