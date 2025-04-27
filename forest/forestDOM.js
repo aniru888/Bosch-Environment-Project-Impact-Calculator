@@ -221,29 +221,40 @@ function displayForestResults(results) {
  * @param {object} summary - Summary results
  */
 function updateSummaryMetrics(summary) {
-    console.log('Updating summary metrics with:', summary);
-    
+    // We trust 'summary' arrives here based on previous logs.
+    // Let's directly check the properties before passing them.
+
+    const totalCO2eValue = summary?.totalCO2e;
+    const avgAnnualCO2eValue = summary?.avgAnnualCO2e;
+    const finalCarbonStockValue = summary?.finalCarbonStock;
+
+    // Log the values *just before* they are used.
+    console.log(`[updateSummaryMetrics] Values to format - total: ${totalCO2eValue}, avg: ${avgAnnualCO2eValue}, final: ${finalCarbonStockValue}`);
+
     // Check if the elements exist before updating
     const totalCO2eElement = document.getElementById('total-co2e');
     const avgAnnualCO2eElement = document.getElementById('avg-annual-co2e');
     const finalCarbonElement = document.getElementById('final-carbon');
-    
-    if (!totalCO2eElement) {
+
+    if (totalCO2eElement) {
+        // Pass the explicitly checked value
+        domUtils.updateMetric('total-co2e', totalCO2eValue, 1);
+    } else {
         console.error('Element with ID "total-co2e" not found in HTML');
-    } else {
-        domUtils.updateMetric('total-co2e', summary.totalCO2e, 1);
     }
-    
-    if (!avgAnnualCO2eElement) {
+
+    if (avgAnnualCO2eElement) {
+        // Pass the explicitly checked value
+        domUtils.updateMetric('avg-annual-co2e', avgAnnualCO2eValue, 1);
+    } else {
         console.error('Element with ID "avg-annual-co2e" not found in HTML');
-    } else {
-        domUtils.updateMetric('avg-annual-co2e', summary.avgAnnualCO2e, 1);
     }
-    
-    if (!finalCarbonElement) {
-        console.error('Element with ID "final-carbon" not found in HTML');
+
+    if (finalCarbonElement) {
+        // Pass the explicitly checked value
+        domUtils.updateMetric('final-carbon', finalCarbonStockValue, 1);
     } else {
-        domUtils.updateMetric('final-carbon', summary.finalCarbonStock, 1);
+        console.error('Element with ID "final-carbon" not found in HTML');
     }
 }
 
