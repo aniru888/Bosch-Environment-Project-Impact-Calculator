@@ -83,6 +83,3 @@ const analytics = {
 document.addEventListener('DOMContentLoaded', () => {
     analytics.init();
 });
-
-// Make analytics available globally
-window.analytics = analytics;

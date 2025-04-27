@@ -7,40 +7,31 @@ class AppMain {
     }
     
     init() {
-        console.log('Initializing application...');
+        console.log('AppMain.init() called...');
         
-        // First check if required globals are available
+        // Check for required globals (redundant check, but safe)
         if (!window.appGlobals) {
-            console.error('Global namespace not initialized. Please ensure globals.js is loaded first.');
+            console.error('AppMain.init: Global namespace not initialized.');
             return;
         }
         
-        // Initialize analytics first
-        if (window.analytics) {
-            window.analytics.init();
-            console.log('Analytics initialized');
-        }
-
-        // Initialize event systems globally
-        if (!window.initializeEventSystems()) {
-            console.error('Failed to initialize event systems');
-            return;
-        }
-        console.log('Event systems initialized');
+        // Analytics and Event Systems are now initialized in globals.js before this
+        // console.log('Analytics initialized'); // Removed
+        // console.log('Event systems initialized'); // Removed
         
-        // Initialize modules in correct order
+        // Initialize modules (registering them)
         if (!this._registerModules()) {
-            console.error('Failed to register modules');
-            return;
+            console.error('AppMain.init: Failed to register modules');
+            return; // Stop if registration fails
         }
         
-        // Setup UI only after modules are ready
+        // Setup UI elements like tab navigation
         this._setupTabNavigation();
         
         this.initialized = true;
-        console.log('Application initialization complete');
+        console.log('AppMain initialization complete');
         
-        // Show initial tab
+        // Show the initial active tab
         this._showActiveTab();
     }
     
@@ -148,16 +139,3 @@ class AppMain {
         }
     }
 }
-
-// Initialize application when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    try {
-        const app = new AppMain();
-        app.init();
-        
-        // Store app instance globally for debugging
-        window.app = app;
-    } catch (error) {
-        console.error('Fatal error during application initialization:', error);
-    }
-});

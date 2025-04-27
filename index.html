@@ -478,11 +478,16 @@
         </div>
     </footer>
 
-    <!-- Script imports - add globals.js first -->
-    <script src="js/globals.js"></script>
+    <!-- Script imports - load modules first, then globals.js, then application scripts -->
+    <!-- 1. Module scripts -->
     <script src="utils.js"></script>
     <script src="domUtils.js"></script>
     <script src="analytics.js"></script>
+    
+    <!-- 2. Global initializations -->
+    <script src="js/globals.js"></script>
+    
+    <!-- 3. Application scripts -->
     <script src="forest/forestCalcs.js"></script>
     <script src="forest/forestDOM.js"></script>
     <script src="forest/forestIO.js"></script>

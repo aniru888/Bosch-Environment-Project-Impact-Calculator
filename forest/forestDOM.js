@@ -187,7 +187,7 @@ function displayForestResults(results) {
     updateForestResultsTable(results.yearly);
 
     // Create or update sequestration chart
-    createSequestrationChart(results, 'forest-sequestration-chart');
+    createSequestrationChart(results, 'sequestration-chart'); // Corrected ID to match index.html
 
     // Update enhanced sections (cost, credits, biodiversity, beneficiaries)
     // These functions should handle their own display logic if needed
