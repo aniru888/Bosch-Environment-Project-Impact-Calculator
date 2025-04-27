@@ -220,10 +220,13 @@ function updateSummaryMetrics(summary) {
         return;
     }
 
-    // Extract values directly without fallbacks
-    const totalCO2eValue = summary.totalCO2e;
-    const avgAnnualCO2eValue = summary.avgAnnualCO2e;
-    const finalCarbonStockValue = summary.finalCarbonStock;
+    // Log the summary object to help debug
+    console.log('Summary data received:', summary);
+
+    // Extract values with proper property names and add fallbacks
+    const totalCO2eValue = summary.totalCO2e || 0;
+    const avgAnnualCO2eValue = summary.avgAnnualCO2e || 0;
+    const finalCarbonStockValue = summary.finalCarbonStock || 0;
     
     // Update the DOM elements with formatted values
     domUtils.updateMetric('total-co2e', totalCO2eValue, 2);
