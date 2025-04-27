@@ -172,13 +172,8 @@ function displayForestResults(results) {
     console.log('Displaying forest results:', results);
     clearForestErrors(); // Clear previous errors
 
-    // Ensure results section is visible
-    if (window.appGlobals.forest.resultsSection) {
-        window.appGlobals.forest.resultsSection.style.display = 'block'; // Ensure it's visible
-    } else {
-        console.error('Results section not found');
-        return;
-    }
+    // Store results globally
+    window.appGlobals.lastForestResults = results;
 
     // Update summary metrics
     updateSummaryMetrics(results.summary);
@@ -197,8 +192,8 @@ function displayForestResults(results) {
     updateBiodiversity(results.biodiversity);
     updateBeneficiaries(results.beneficiaries);
 
-    // Store results globally
-    window.appGlobals.lastForestResults = results;
+    // Remove loading indicator AFTER results are displayed
+    document.body.classList.remove('loading');
 }
 
 /**
@@ -465,6 +460,9 @@ function resetForestUI() {
 
     // Reset enhanced sections if they have reset functions
     // e.g., resetCostAnalysisUI(), resetCarbonCreditsUI(), etc.
+
+    // Remove loading indicator if reset is triggered during loading
+    document.body.classList.remove('loading');
 
     console.log('Forest UI reset complete');
 }

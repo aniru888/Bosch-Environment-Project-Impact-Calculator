@@ -151,7 +151,7 @@ function clearWaterErrors() {
 function displayWaterResults(results) {
     // Store results
     window.appGlobals.lastWaterResults = results;
-    
+
     // Update summary metrics
     updateSummaryMetrics(results.summary);
     
@@ -160,6 +160,9 @@ function displayWaterResults(results) {
     
     // Update the results table
     updateResultsTable(results.yearly);
+
+    // Remove loading indicator AFTER results are displayed
+    document.body.classList.remove('loading');
 }
 
 /**
@@ -363,6 +366,17 @@ function resetWaterUI() {
         window.appGlobals.water.form.reset();
         setupFormFields(); // Restore default values
     }
+
+    // Clear results table
+    if (window.appGlobals.water.resultsBody) {
+        domUtils.clearElement(window.appGlobals.water.resultsBody);
+    }
+
+    // Reset summary metrics (optional)
+    // updateSummaryMetrics({ annualWaterCaptured: 0, totalWaterCaptured: 0, annualEnergySaved: 0, annualEmissionsReduction: 0, totalEmissionsReduction: 0 });
+
+    // Remove loading indicator if reset is triggered during loading
+    document.body.classList.remove('loading');
 }
 
 // Export functions via window object

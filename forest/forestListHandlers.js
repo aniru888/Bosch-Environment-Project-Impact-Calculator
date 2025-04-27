@@ -76,7 +76,15 @@ function validateInput(input) {
  * @param {Event} event - Form submission event
  */
 function handleForestFormSubmit(event) {
+    // Prevent default form submission
     event.preventDefault();
+
+    // Add loading indicator
+    document.body.classList.add('loading');
+
+    // Clear previous errors
+    window.forestDOM.clearErrors();
+
     console.log('Form submission handler triggered');
     
     // Validate all required inputs

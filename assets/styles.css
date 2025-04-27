@@ -145,12 +145,3 @@ body.loading::after {
     color: #333;
     z-index: 9999; /* Above the overlay */
 }
-
-/* Ensure results sections are hidden initially or while loading */
-.results-section.hidden {
-    display: none;
-}
-
-/* Optional: Style results section when loading */
-/* You could add styles here if needed, but the overlay covers it */
-/* Example: opacity: 0.5; */

@@ -101,6 +101,12 @@ function validateInput(input) {
  */
 function handleWaterFormSubmit(event) {
     event.preventDefault();
+
+    // Add loading indicator
+    document.body.classList.add('loading');
+
+    // Clear previous errors
+    window.waterDOM.clearErrors();
     
     // Validate all required inputs
     const allInputsValid = validateAllInputs();
