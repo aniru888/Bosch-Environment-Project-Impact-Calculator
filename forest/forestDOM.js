@@ -187,7 +187,7 @@ function displayForestResults(results) {
 
     // Use domUtils to show element, which handles both class and style
     domUtils.showElement(resultsSection);
-    resultsSection.style.display = 'block'; // Ensure block display
+    // resultsSection.style.display = 'block'; // No longer needed, handled by domUtils.showElement
 
     console.log('Results section visibility after:', {
         display: resultsSection.style.display,

@@ -14,22 +14,29 @@ const domUtils = {
     },
     
     /**
-     * Show a DOM element by removing the hidden class
+     * Show a DOM element by removing the hidden class and ensuring it's displayed.
+     * Assumes the element should be display: block when visible.
      * @param {HTMLElement} element - The element to show
      */
     showElement(element) {
         if (element) {
             element.classList.remove('hidden');
+            // Optionally ensure a specific display type if needed, otherwise removing the class might suffice
+            element.style.display = 'block'; // Set display without !important
         }
     },
     
     /**
-     * Hide a DOM element by adding the hidden class
+     * Hide a DOM element by adding the hidden class.
+     * The .hidden class in CSS should handle display: none.
      * @param {HTMLElement} element - The element to hide
      */
     hideElement(element) {
         if (element) {
             element.classList.add('hidden');
+            // Setting style display to none might be redundant if the class does it,
+            // but doesn't hurt. Remove if relying solely on the class.
+            element.style.display = 'none'; // Set display without !important
         }
     },
     
