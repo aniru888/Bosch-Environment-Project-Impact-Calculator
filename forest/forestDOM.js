@@ -206,7 +206,7 @@ function displayForestResults(results) {
         console.error('Forest results table body element (ID: forest-results-body) not found in the DOM. Cannot update table.');
     } else {
         console.log('Updating results table...');
-        updateResultsTable(results.yearly);
+        updateForestResultsTable(results.yearly); // UPDATED: Call the renamed function
     }
     
     // Final visibility check
@@ -299,20 +299,36 @@ function updateBeneficiaries(beneficiaries) {
  * Update the results table with yearly data
  * @param {Array} yearlyData - Array of yearly data objects
  */
-function updateResultsTable(yearlyData) {
+function updateForestResultsTable(yearlyData) { // RENAMED function
     // Clear existing rows
     domUtils.clearElement(window.appGlobals.forest.resultsBody);
     
     // Add rows for each year
     yearlyData.forEach(data => {
+        // Add safety checks for potentially missing data points within the loop
+        const year = data.year || 'N/A';
+        const survivingTrees = utils.formatNumber(data.survivingTrees, 0);
+        const growingStock = utils.formatNumber(data.growingStock, 1);
+        const carbonContent = utils.formatNumber(data.carbonContent, 1);
+        const co2e = utils.formatNumber(data.co2e, 1);
+        // Check annualIncrement specifically before formatting
+        const annualIncrementValue = data.annualIncrement;
+        const annualIncrement = utils.formatNumber(annualIncrementValue, 1);
+        const cumulativeCO2e = utils.formatNumber(data.cumulativeCO2e, 1);
+
+        // Log if annualIncrement is problematic before formatting
+        if (annualIncrementValue === undefined || annualIncrementValue === null || isNaN(annualIncrementValue)) {
+             console.warn(`Year ${year}: annualIncrement is invalid:`, annualIncrementValue, 'Formatted as:', annualIncrement);
+        }
+
         const row = domUtils.createTableRow([
-            data.year,
-            utils.formatNumber(data.survivingTrees, 0),
-            utils.formatNumber(data.growingStock, 1),
-            utils.formatNumber(data.carbonContent, 1),
-            utils.formatNumber(data.co2e, 1),
-            utils.formatNumber(data.annualIncrement, 1),
-            utils.formatNumber(data.cumulativeCO2e, 1)
+            year,
+            survivingTrees,
+            growingStock,
+            carbonContent,
+            co2e,
+            annualIncrement, // Pass the formatted (or '0') value
+            cumulativeCO2e
         ]);
         
         window.appGlobals.forest.resultsBody.appendChild(row);
