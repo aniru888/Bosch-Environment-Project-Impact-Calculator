@@ -139,10 +139,40 @@ function getLastResults() {
     return window.appGlobals.lastForestResults;
 }
 
+/**
+ * Debug function to display the current state of results
+ */
+function debugResults() {
+    console.log('=== DEBUG RESULTS ===');
+    const results = window.appGlobals.lastForestResults;
+    console.log('Last results in globals:', results);
+    
+    if (results) {
+        console.log('Results summary:', results.summary);
+        console.log('First yearly entry:', results.yearly?.[0]);
+        console.log('Last yearly entry:', results.yearly?.[results.yearly.length-1]);
+    }
+    
+    const resultsElement = document.getElementById('forest-results');
+    console.log('Results section element found:', !!resultsElement);
+    if (resultsElement) {
+        console.log('Results section display:', window.getComputedStyle(resultsElement).display);
+        console.log('Results section visibility:', window.getComputedStyle(resultsElement).visibility);
+    }
+    console.log('=== END DEBUG ===');
+    
+    // Try to force display if results exist
+    if (results && window.forestDOM && window.forestDOM.displayResults) {
+        console.log('Attempting to force display of results...');
+        window.forestDOM.displayResults(results);
+    }
+}
+
 // Register forest calculator globally
 window.forestMain = {
     init: initForestCalculator,
     calculateForest,
     resetForest,
-    getLastResults
+    getLastResults,
+    debugResults // Add the new function here
 };

@@ -169,7 +169,10 @@ function clearForestErrors() {
  * @param {object} results - Calculation results
  */
 function displayForestResults(results) {
-    console.log('Displaying forest results:', results);
+    console.log('displayForestResults called with:', results);
+    console.log('Results summary exists:', !!results?.summary);
+    console.log('Results yearly exists:', !!results?.yearly);
+    console.log('Results section element exists:', !!window.appGlobals.forest.resultsSection);
     
     // Check if the main results container exists
     if (!window.appGlobals.forest.resultsSection) {
@@ -224,9 +227,30 @@ function displayForestResults(results) {
  * @param {object} summary - Summary results
  */
 function updateSummaryMetrics(summary) {
-    domUtils.updateMetric('total-co2e', summary.totalCO2e, 1);
-    domUtils.updateMetric('avg-annual-co2e', summary.avgAnnualCO2e, 1);
-    domUtils.updateMetric('final-carbon', summary.finalCarbonStock, 1);
+    console.log('Updating summary metrics with:', summary);
+    
+    // Check if the elements exist before updating
+    const totalCO2eElement = document.getElementById('total-co2e');
+    const avgAnnualCO2eElement = document.getElementById('avg-annual-co2e');
+    const finalCarbonElement = document.getElementById('final-carbon');
+    
+    if (!totalCO2eElement) {
+        console.error('Element with ID "total-co2e" not found in HTML');
+    } else {
+        domUtils.updateMetric('total-co2e', summary.totalCO2e, 1);
+    }
+    
+    if (!avgAnnualCO2eElement) {
+        console.error('Element with ID "avg-annual-co2e" not found in HTML');
+    } else {
+        domUtils.updateMetric('avg-annual-co2e', summary.avgAnnualCO2e, 1);
+    }
+    
+    if (!finalCarbonElement) {
+        console.error('Element with ID "final-carbon" not found in HTML');
+    } else {
+        domUtils.updateMetric('final-carbon', summary.finalCarbonStock, 1);
+    }
 }
 
 /**
@@ -405,8 +429,11 @@ function createSequestrationChart(results, chartElementId) {
  * Reset the forest UI
  */
 function resetForestUI() {
-    // Hide results section
-    domUtils.hideElement(window.appGlobals.forest.resultsSection);
+    // Instead of hiding, just clear the content but keep it visible
+    domUtils.clearElement(document.getElementById('forest-results-table-body'));
+    domUtils.clearElement(document.getElementById('total-co2e'));
+    domUtils.clearElement(document.getElementById('avg-annual-co2e'));
+    domUtils.clearElement(document.getElementById('final-carbon'));
     
     // Clear error messages
     clearForestErrors();

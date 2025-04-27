@@ -4,15 +4,15 @@
  */
 
 // Global initialization state
-window._initializationState = {
+window._initializationState = window._initializationState || {
     modulesLoaded: false,
     eventSystemsInitialized: false,
-    domReady: false
+    domInitialized: false,
+    calculatorsInitialized: false
 };
 
 // Initialize main application namespace
-window.appGlobals = {
-    // Forest calculator namespace
+window.appGlobals = window.appGlobals || {
     forest: {
         // DOM elements and state
         form: null,
@@ -38,79 +38,59 @@ window.appGlobals = {
         projectCostInput: null,
         carbonPriceInput: null
     },
-    
-    // Energy calculator namespace (placeholder for future implementation)
-    energy: {},
-    
-    // Water calculator namespace
-    water: {
-        // DOM elements and state
-        form: null,
-        resultsSection: null,
-        resultsBody: null,
-        errorElement: null,
-        waterCaptureChart: null
-    },
-    
-    // Shared application settings
-    settings: {
-        debug: false,
-        version: '1.0.0'
-    }
+    water: {},
+    lastForestResults: null,
+    lastWaterResults: null,
+    forestSpeciesData: null
 };
 
-// Global variables for storing the last calculation results
-window.appGlobals.lastForestResults = null;
-window.appGlobals.lastWaterResults = null;
+// Energy calculator namespace (placeholder for future implementation)
+window.appGlobals.energy = window.appGlobals.energy || {};
 
-// Species data storage
-window.appGlobals.forestSpeciesData = null;
+// Water calculator namespace
+window.appGlobals.water = window.appGlobals.water || {
+    // DOM elements and state
+    form: null,
+    resultsSection: null,
+    resultsBody: null,
+    errorElement: null,
+    waterCaptureChart: null
+};
+
+// Shared application settings
+window.appGlobals.settings = window.appGlobals.settings || {
+    debug: false,
+    version: '1.0.0'
+};
 
 // Analytics events storage
-window.appGlobals.analyticsEvents = [];
+window.appGlobals.analyticsEvents = window.appGlobals.analyticsEvents || [];
 
 // Flag indicating whether modules have been initialized
-window.appGlobals.modulesInitialized = false;
+window.appGlobals.modulesInitialized = window.appGlobals.modulesInitialized || false;
 
 /**
  * Initialize event systems with dependency checks
  * @returns {boolean} - Whether initialization was successful
  */
-window.initializeEventSystems = function() {
-    // Prevent multiple initializations
-    if (window._initializationState.eventSystemsInitialized) {
-        console.log('Event systems already initialized');
-        return true;
-    }
-
-    // Check required dependencies
-    if (!window.forestCalcs || !window.waterCalcs) {
-        console.error('Calculator modules not loaded. Cannot initialize event systems.');
-        return false;
-    }
-
-    try {
-        // Initialize forest event system
-        if (window.forestCalcs.eventSystem) {
+function initializeEventSystems() {
+    if (!window._initializationState.eventSystemsInitialized) {
+        console.log('Initializing event systems...');
+        
+        // Initialize the forest event system
+        if (window.forestCalcs && window.forestCalcs.eventSystem) {
             window.forestCalcs.eventSystem.init();
-            window.forestCalcs.eventSystem.initialized = true;
-            console.log('Forest event system initialized globally');
+            console.log('Forest event system initialized');
+        } else {
+            console.error('Forest event system not available');
         }
         
-        // Initialize water event system
-        if (window.waterCalcs.eventSystem) {
-            window.waterCalcs.eventSystem.init();
-            window.waterCalcs.eventSystem.initialized = true;
-            console.log('Water event system initialized globally');
-        }
-
         window._initializationState.eventSystemsInitialized = true;
-        return true;
-    } catch (error) {
-        console.error('Error initializing event systems:', error);
-        return false;
     }
-};
+    return window._initializationState.eventSystemsInitialized;
+}
+
+window.initializeEventSystems = initializeEventSystems;
 
 /**
  * Check if all required modules are loaded
