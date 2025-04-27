@@ -3,9 +3,6 @@
  * Handles input/output operations for the Forest calculator
  */
 
-// Store species data
-let loadedSpeciesData = null;
-
 /**
  * Initialize the Forest IO module
  */
@@ -176,8 +173,8 @@ function validateSpeciesData(speciesData) {
  * @param {Array} speciesData - Array of species objects
  */
 function handleSpeciesData(speciesData) {
-    // Store the data
-    loadedSpeciesData = speciesData;
+    // Store the data in global variable
+    window.appGlobals.forestSpeciesData = speciesData;
     
     // Update UI to show loaded species
     updateSpeciesUI(speciesData);
@@ -204,7 +201,7 @@ function updateSpeciesUI(speciesData) {
  * @returns {Array|null} - Array of species objects or null if none loaded
  */
 function getLoadedSpeciesData() {
-    return loadedSpeciesData;
+    return window.appGlobals.forestSpeciesData;
 }
 
 /**
@@ -212,7 +209,7 @@ function getLoadedSpeciesData() {
  * @returns {boolean} - True if multiple species loaded
  */
 function isMultiSpeciesMode() {
-    return loadedSpeciesData && loadedSpeciesData.length > 0;
+    return window.appGlobals.forestSpeciesData && window.appGlobals.forestSpeciesData.length > 0;
 }
 
 /**

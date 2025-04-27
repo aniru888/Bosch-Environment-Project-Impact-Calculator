@@ -12,21 +12,26 @@ function setupGreenCoverAndCredits(speciesData) {
     // Set up variables
     let initialGreenCover = 10; // Default initial green cover percentage (assumption)
     let finalGreenCover = 0;
-    let riskBuffer = 20; // Default risk buffer percentage
     
     // Get DOM elements
     const greenCoverSection = document.getElementById('green-cover-section');
     const carbonCreditsSection = document.getElementById('carbon-credits-section');
-    const riskBufferInput = document.getElementById('risk-buffer');
+    const riskBufferInput = document.getElementById('risk-buffer-input');
+    const riskBufferDisplay = document.getElementById('risk-buffer');
     
-    // Add event listeners
+    // Add event listener to risk buffer input
     if (riskBufferInput) {
         riskBufferInput.addEventListener('input', function() {
-            riskBuffer = parseFloat(this.value) || 20;
+            const riskBuffer = parseFloat(this.value) || 20;
+            // Update display
+            if (riskBufferDisplay) {
+                riskBufferDisplay.textContent = riskBuffer;
+            }
             // If results are already displayed, update the carbon credits
             const results = window.forestMain?.getLastResults();
-            if (results) {
-                updateCarbonCreditsCalculation(results);
+            if (results && window.forestDOM) {
+                const carbonPrice = parseFloat(document.getElementById('forest-carbon-price')?.value) || 5;
+                window.forestDOM.updateCarbonCredits(results.summary.totalCO2e, carbonPrice, riskBuffer);
             }
         });
     }
@@ -72,19 +77,14 @@ function setupGreenCoverAndCredits(speciesData) {
         // Show carbon credits section
         domUtils.showElement(carbonCreditsSection);
         
-        // Get carbon price from form
-        const carbonPriceInput = document.getElementById('forest-carbon-price');
-        const carbonPrice = carbonPriceInput ? parseFloat(carbonPriceInput.value) || 5 : 5;
+        // Get carbon price and risk buffer from inputs
+        const carbonPrice = parseFloat(document.getElementById('forest-carbon-price')?.value) || 5;
+        const riskBuffer = parseFloat(riskBufferInput?.value) || 20;
         
-        // Calculate carbon credits after risk buffer
-        const totalCO2e = results.summary.totalCO2e;
-        const creditsAfterBuffer = totalCO2e * (1 - riskBuffer / 100);
-        const revenue = creditsAfterBuffer * carbonPrice;
-        
-        // Update UI
-        domUtils.updateMetric('carbon-credits', creditsAfterBuffer, 0);
-        domUtils.updateMetric('carbon-revenue', revenue, 0);
-        domUtils.updateMetric('risk-buffer', riskBuffer, 0);
+        // Use the centralized DOM method to update carbon credits
+        if (window.forestDOM) {
+            window.forestDOM.updateCarbonCredits(results.summary.totalCO2e, carbonPrice, riskBuffer);
+        }
     }
     
     // Return functions for external access

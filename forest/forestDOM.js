@@ -10,6 +10,12 @@
  * @param {object} options - Configuration options
  */
 function initForestDOM(options = {}) {
+    // Verify global initialization state
+    if (!window._initializationState.eventSystemsInitialized) {
+        console.error('Event systems must be initialized before Forest DOM module');
+        return false;
+    }
+
     // Get DOM elements
     window.appGlobals.forest.form = document.getElementById('forest-form');
     window.appGlobals.forest.resultsSection = document.getElementById('forest-results');
@@ -19,14 +25,11 @@ function initForestDOM(options = {}) {
     // Ensure required elements exist
     if (!window.appGlobals.forest.resultsSection) {
         console.error('Forest results section element (ID: forest-results) is missing. Please check the HTML structure.');
+        return false;
     }
     if (!window.appGlobals.forest.resultsBody) {
         console.error('Forest results table body element (ID: forest-results-body) is missing. Please check the HTML structure.');
-    }
-
-    // Initialize the event system if it's not already
-    if (!window.forestCalcs.eventSystem.initialized) {
-        window.forestCalcs.eventSystem.init();
+        return false;
     }
 
     // Set up form fields with defaults
@@ -40,6 +43,7 @@ function initForestDOM(options = {}) {
 
     // Debug log to confirm initialization
     console.log('Forest DOM module initialized, event handlers registered');
+    return true;
 }
 
 /**
@@ -303,15 +307,21 @@ function createSequestrationChart(results, chartElementId) {
         window.appGlobals.forest.sequestrationChart.destroy();
     }
     
+    // Set proper chart dimensions
+    const chartContainer = chartElement.parentElement;
+    if (chartContainer) {
+        chartContainer.style.height = '400px';
+        chartContainer.style.width = '100%';
+    }
+    chartElement.style.height = '100%';
+    chartElement.style.width = '100%';
+    
     // Prepare data with safety checks
     const years = results.yearly.map(data => `Year ${data.year || 0}`);
     const co2eData = results.yearly.map(data => data.co2e || 0);
     const annualIncrementData = results.yearly.map(data => data.annualIncrement || 0);
     
     console.log('Chart data prepared:', {years, co2eData, annualIncrementData}); // Debug
-    
-    // Create new chart with fixed dimensions
-    chartElement.style.height = '300px'; // Ensure canvas has height
     
     try {
         window.appGlobals.forest.sequestrationChart = new Chart(chartElement, {

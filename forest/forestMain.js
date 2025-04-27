@@ -3,9 +3,6 @@
  * Entry point for the Forest calculator
  */
 
-// Store last calculation results
-let lastResults = null;
-
 /**
  * Initialize the Forest calculator
  * @returns {Object} - Forest calculator interface
@@ -13,23 +10,27 @@ let lastResults = null;
 function initForestCalculator() {
     console.log('Initializing Forest Calculator');
     
-    // Initialize event system first to ensure it's available for all modules
-    if (window.forestCalcs && window.forestCalcs.eventSystem && !window.forestCalcs.eventSystem.initialized) {
-        window.forestCalcs.eventSystem.init();
-        console.log('Forest event system initialized');
-    }
+    // Use the globally initialized event system
+    window.initializeEventSystems();
     
-    // Initialize modules
+    // Initialize other modules in the correct order
+    // DOM module needs to be initialized first since other modules may depend on it
     if (window.forestDOM) {
         window.forestDOM.init();
+        console.log('Forest DOM module initialized');
+    } else {
+        console.error('Forest DOM module not available');
     }
     
+    // Next initialize IO and List Handlers
     if (window.forestIO) {
         window.forestIO.init();
+        console.log('Forest IO module initialized');
     }
     
     if (window.forestListHandlers) {
         window.forestListHandlers.init();
+        console.log('Forest List Handlers module initialized');
     }
     
     // Return interface for external access
@@ -65,8 +66,8 @@ function calculateForest(formData) {
             results = window.forestCalcs.calculateSequestration(formData);
         }
         
-        // Store results
-        lastResults = results;
+        // Store results in global variable
+        window.appGlobals.lastForestResults = results;
         
         // Calculate cost analysis
         const costAnalysis = window.forestCalcs.calculateForestCostAnalysis(
@@ -75,16 +76,8 @@ function calculateForest(formData) {
             results
         );
 
-        // --- DEBUGGING START ---
-        console.log('Calculation results:', results);
-        // --- DEBUGGING END ---
-
-        // Trigger results event for UI update with defensive check
-        if (window.forestCalcs && window.forestCalcs.eventSystem) {
-            window.forestCalcs.eventSystem.onResults(results);
-        } else {
-            console.error('Forest event system not initialized');
-        }
+        // Trigger results event - this will update the UI through the event system
+        window.forestCalcs.eventSystem.onResults(results);
         
         // Update cost analysis
         if (window.forestDOM) {
@@ -109,11 +102,9 @@ function calculateForest(formData) {
     } catch (error) {
         console.error('Error calculating forest sequestration:', error);
         
-        // Defensive check before showing error
+        // Show error via event system
         if (window.forestCalcs && window.forestCalcs.eventSystem) {
             window.forestCalcs.eventSystem.showError(`Calculation error: ${error.message}`, null);
-        } else {
-            console.error('Forest event system not initialized, cannot show error:', error.message);
         }
         
         return null;
@@ -125,7 +116,7 @@ function calculateForest(formData) {
  */
 function resetForest() {
     // Reset results
-    lastResults = null;
+    window.appGlobals.lastForestResults = null;
     
     // Trigger reset event with defensive check
     if (window.forestCalcs && window.forestCalcs.eventSystem) {
@@ -140,7 +131,7 @@ function resetForest() {
  * @returns {Object|null} - Last calculation results or null if none
  */
 function getLastResults() {
-    return lastResults;
+    return window.appGlobals.lastForestResults;
 }
 
 // Register forest calculator globally

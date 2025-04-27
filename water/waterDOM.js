@@ -246,7 +246,7 @@ function updateResultsTable(yearlyData) {
 function createWaterCaptureChart(results, chartElementId) {
     // Get the chart canvas element
     const chartElement = document.getElementById(chartElementId);
-    console.log('Chart element found:', !!chartElement, chartElementId); // Debug
+    console.log('Water chart element found:', !!chartElement, chartElementId);
     if (!chartElement) return;
     
     // Check if Chart.js is available
@@ -260,15 +260,21 @@ function createWaterCaptureChart(results, chartElementId) {
         window.appGlobals.water.waterCaptureChart.destroy();
     }
     
+    // Set proper chart dimensions
+    const chartContainer = chartElement.parentElement;
+    if (chartContainer) {
+        chartContainer.style.height = '400px';
+        chartContainer.style.width = '100%';
+    }
+    chartElement.style.height = '100%';
+    chartElement.style.width = '100%';
+    
     // Prepare data with safety checks
     const years = results.yearly.map(data => `Year ${data.year || 0}`);
     const waterData = results.yearly.map(data => data.cumulativeWaterCaptured || 0);
     const emissionsData = results.yearly.map(data => data.cumulativeEmissionsReduction || 0);
     
-    console.log('Water chart data prepared:', {years, waterData, emissionsData}); // Debug
-    
-    // Create new chart with fixed dimensions
-    chartElement.style.height = '300px'; // Ensure canvas has height
+    console.log('Water chart data prepared:', {years, waterData, emissionsData});
     
     try {
         window.appGlobals.water.waterCaptureChart = new Chart(chartElement, {
@@ -298,7 +304,7 @@ function createWaterCaptureChart(results, chartElementId) {
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false, // Allow chart to control its size
+                maintainAspectRatio: false,
                 interaction: {
                     mode: 'index',
                     intersect: false,
@@ -311,7 +317,8 @@ function createWaterCaptureChart(results, chartElementId) {
                         title: {
                             display: true,
                             text: 'Water Captured (KL)'
-                        }
+                        },
+                        beginAtZero: true
                     },
                     y1: {
                         type: 'linear',
@@ -321,9 +328,16 @@ function createWaterCaptureChart(results, chartElementId) {
                             display: true,
                             text: 'Emissions Reduction (tonnes CO₂)'
                         },
+                        beginAtZero: true,
                         grid: {
                             drawOnChartArea: false
                         }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
                     }
                 }
             }
