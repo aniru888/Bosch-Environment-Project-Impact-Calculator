@@ -4,7 +4,7 @@
  */
 
 // Constants
-const CO2_EMISSIONS_PER_KWH = 0.5; // kg CO2 per kWh (average global value)
+const CO2E_EMISSIONS_PER_KWH = 0.5; // kg CO2e per kWh (average global value)
 const KWH_PER_KL_CONVENTIONAL = 2.5; // kWh per kiloliter for conventional water treatment
 
 // Event system for water module
@@ -121,9 +121,9 @@ function calculateWaterCapture(inputs) {
     // Formula: Water captured (KL) * Energy savings per KL (kWh)
     const annualEnergySaved = annualWaterCaptured * energySavings;
     
-    // Calculate annual emissions reduction in tonnes of CO2
-    // Formula: Energy saved (kWh) * Emissions factor (kg CO2 per kWh) / 1000 to convert to tonnes
-    const annualEmissionsReduction = (annualEnergySaved * CO2_EMISSIONS_PER_KWH) / 1000;
+    // Calculate annual emissions reduction in tonnes of CO2e
+    // Formula: Energy saved (kWh) * Emissions factor (kg CO2e per kWh) / 1000 to convert to tonnes
+    const annualEmissionsReduction = (annualEnergySaved * CO2E_EMISSIONS_PER_KWH) / 1000;
     
     // Calculate for each year of the project
     let cumulativeWater = 0;
@@ -256,6 +256,6 @@ window.waterCalcs = {
     calculateWaterCostAnalysis,
     calculateEnvironmentalBenefits,
     calculateWaterBeneficiaries,
-    CO2_EMISSIONS_PER_KWH,
+    CO2E_EMISSIONS_PER_KWH,
     KWH_PER_KL_CONVENTIONAL
 };

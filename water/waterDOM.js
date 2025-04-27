@@ -291,7 +291,7 @@ function createWaterCaptureChart(results, chartElementId) {
                         yAxisID: 'y'
                     },
                     {
-                        label: 'Cumulative Emissions Reduction (tonnes CO₂)',
+                        label: 'Cumulative Emissions Reduction (t CO₂e)',
                         data: emissionsData,
                         type: 'line',
                         fill: false,
@@ -326,7 +326,7 @@ function createWaterCaptureChart(results, chartElementId) {
                         position: 'right',
                         title: {
                             display: true,
-                            text: 'Emissions Reduction (tonnes CO₂)'
+                            text: 'Emissions Reduction (t CO₂e)'
                         },
                         beginAtZero: true,
                         grid: {
