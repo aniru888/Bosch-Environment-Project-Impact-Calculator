@@ -140,13 +140,10 @@ function registerEventHandlers() {
 function showForestError(message, element) {
     if (window.appGlobals.forest.errorElement) {
         window.appGlobals.forest.errorElement.textContent = message;
-        window.appGlobals.forest.errorElement.style.display = 'block';
+        // Removed call to domUtils.showElement
     }
-    
-    // Highlight the problematic input if provided
-    if (element && element.classList) {
-        element.classList.add('error');
-        element.focus();
+    if (element) {
+        element.classList.add('is-invalid'); // Add validation class if applicable
     }
 }
 
@@ -156,12 +153,11 @@ function showForestError(message, element) {
 function clearForestErrors() {
     if (window.appGlobals.forest.errorElement) {
         window.appGlobals.forest.errorElement.textContent = '';
-        window.appGlobals.forest.errorElement.style.display = 'none';
+        // Removed call to domUtils.hideElement
     }
-    
-    // Remove error class from all inputs
-    const inputs = window.appGlobals.forest.form.querySelectorAll('.error');
-    inputs.forEach(input => input.classList.remove('error'));
+    // Remove validation classes from all inputs if needed
+    const inputs = window.appGlobals.forest.form?.querySelectorAll('input');
+    inputs?.forEach(input => input.classList.remove('is-invalid'));
 }
 
 /**
@@ -169,59 +165,43 @@ function clearForestErrors() {
  * @param {object} results - Calculation results
  */
 function displayForestResults(results) {
-    console.log('Displaying forest results...'); // Keep one initial log
-
-    // Check if the main results container exists
-    if (!window.appGlobals.forest.resultsSection) {
-        console.error('Forest results section element (ID: forest-results) not found in the DOM. Cannot display results.');
+    if (!results) {
+        console.error('No results to display');
+        showForestError('Calculation failed or produced no results.');
         return;
     }
 
-    // Show the results section first and log visibility state
-    const resultsSection = window.appGlobals.forest.resultsSection;
-    console.log('Results section visibility before:', {
-        display: resultsSection.style.display,
-        classList: Array.from(resultsSection.classList),
-        computedStyle: window.getComputedStyle(resultsSection).display
-    });
+    console.log('Displaying forest results:', results);
+    clearForestErrors(); // Clear previous errors
 
-    // Use domUtils to show element, which handles both class and style
-    domUtils.showElement(resultsSection);
-    // resultsSection.style.display = 'block'; // No longer needed, handled by domUtils.showElement
-
-    console.log('Results section visibility after:', {
-        display: resultsSection.style.display,
-        classList: Array.from(resultsSection.classList),
-        computedStyle: window.getComputedStyle(resultsSection).display
-    });
-
-    // Make sure we have valid data
-    if (!results || !results.yearly || results.yearly.length === 0 || !results.summary) {
-        console.error('Invalid results data received for display:', results);
-        showForestError('No calculation results or summary to display.');
+    // Ensure results section is visible
+    if (window.appGlobals.forest.resultsSection) {
+        // Removed call to domUtils.showElement
+        window.appGlobals.forest.resultsSection.style.display = 'block'; // Ensure it's visible
+    } else {
+        console.error('Results section not found');
         return;
     }
 
-    // Store results
+    // Update summary metrics
+    updateSummaryMetrics(results.summary);
+
+    // Update results table
+    updateForestResultsTable(results.yearly);
+
+    // Create or update sequestration chart
+    createSequestrationChart(results, 'forest-sequestration-chart');
+
+    // Update enhanced sections (cost, credits, biodiversity, beneficiaries)
+    // These functions should handle their own display logic if needed
+    const carbonPrice = parseFloat(window.appGlobals.forest.carbonPriceInput?.value) || 5;
+    updateCostAnalysis(results.costAnalysis);
+    updateCarbonCredits(results.summary.totalCO2e, carbonPrice);
+    updateBiodiversity(results.biodiversity);
+    updateBeneficiaries(results.beneficiaries);
+
+    // Store results globally
     window.appGlobals.lastForestResults = results;
-
-    // Defer DOM updates to allow rendering after section is made visible
-    setTimeout(() => {
-        try {
-            updateSummaryMetrics(results.summary);
-            createSequestrationChart(results, 'sequestration-chart');
-
-            if (!window.appGlobals.forest.resultsBody) {
-                console.error('Forest results table body element (ID: forest-results-body) not found in the DOM. Cannot update table.');
-            } else {
-                updateForestResultsTable(results.yearly);
-            }
-            console.log('Forest results display updated.'); // Log completion
-        } catch (error) {
-            console.error('Error during deferred DOM update for forest results:', error);
-            showForestError(`Error displaying results: ${error.message}`);
-        }
-    }, 0); // Delay of 0ms pushes execution after current rendering cycle
 }
 
 /**
@@ -462,32 +442,35 @@ function createSequestrationChart(results, chartElementId) {
  * Reset the forest UI
  */
 function resetForestUI() {
-    // Hide the results section
-    if (window.appGlobals.forest.resultsSection) {
-        window.appGlobals.forest.resultsSection.classList.add('hidden');
-        window.appGlobals.forest.resultsSection.style.display = 'none';
+    console.log('Resetting Forest UI');
+    clearForestErrors();
+
+    // Clear results table
+    if (window.appGlobals.forest.resultsBody) {
+        window.domUtils.clearElement(window.appGlobals.forest.resultsBody);
     }
 
-    // Clear element contents
-    domUtils.clearElement(document.getElementById('forest-results-table-body'));
-    domUtils.clearElement(document.getElementById('total-co2e'));
-    domUtils.clearElement(document.getElementById('avg-annual-co2e'));
-    domUtils.clearElement(document.getElementById('final-carbon'));
-    
-    // Clear error messages
-    clearForestErrors();
-    
-    // Destroy chart
-    if (window.appGlobals.forest.sequestrationChart) {
+    // Clear summary metrics (optional: set to default values like '0' or '-')
+    const metrics = document.querySelectorAll('#forest-summary-metrics .metric-value');
+    metrics.forEach(metric => metric.textContent = '-');
+
+    // Clear chart
+    const chartCanvas = document.getElementById('forest-sequestration-chart');
+    if (chartCanvas && window.appGlobals.forest.sequestrationChart) {
         window.appGlobals.forest.sequestrationChart.destroy();
         window.appGlobals.forest.sequestrationChart = null;
     }
-    
-    // Reset form
-    if (window.appGlobals.forest.form) {
-        window.appGlobals.forest.form.reset();
-        setupFormFields(); // Restore default values
-    }
+
+    // Hide results section (optional, could just leave it empty)
+    // if (window.appGlobals.forest.resultsSection) {
+    //     // Removed call to domUtils.hideElement
+    //     window.appGlobals.forest.resultsSection.style.display = 'none'; // Hide it directly
+    // }
+
+    // Reset enhanced sections if they have reset functions
+    // e.g., resetCostAnalysisUI(), resetCarbonCreditsUI(), etc.
+
+    console.log('Forest UI reset complete');
 }
 
 // Export functions

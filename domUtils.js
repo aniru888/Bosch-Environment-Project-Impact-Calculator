@@ -14,33 +14,6 @@ const domUtils = {
     },
     
     /**
-     * Show a DOM element by removing the hidden class and ensuring it's displayed.
-     * Assumes the element should be display: block when visible.
-     * @param {HTMLElement} element - The element to show
-     */
-    showElement(element) {
-        if (element) {
-            element.classList.remove('hidden');
-            // Optionally ensure a specific display type if needed, otherwise removing the class might suffice
-            element.style.display = 'block'; // Set display without !important
-        }
-    },
-    
-    /**
-     * Hide a DOM element by adding the hidden class.
-     * The .hidden class in CSS should handle display: none.
-     * @param {HTMLElement} element - The element to hide
-     */
-    hideElement(element) {
-        if (element) {
-            element.classList.add('hidden');
-            // Setting style display to none might be redundant if the class does it,
-            // but doesn't hurt. Remove if relying solely on the class.
-            element.style.display = 'none'; // Set display without !important
-        }
-    },
-    
-    /**
      * Create a new DOM element with the specified attributes
      * @param {string} tag - The HTML tag name
      * @param {object} options - Options for the element (className, textContent, innerHTML, attributes)
@@ -115,38 +88,46 @@ const domUtils = {
     },
     
     /**
-     * Show an error message
-     * @param {string} message - The error message to display
-     * @param {HTMLElement} element - The element to display the error in
+     * Append multiple children to a parent element
+     * @param {HTMLElement} parent - The parent element
+     * @param {Array<HTMLElement>} children - Array of child elements to append
      */
-    showError(message, element) {
+    appendChildren(parent, children) {
+        children.forEach(child => parent.appendChild(child));
+    },
+
+    /**
+     * Get the value of an input element
+     * @param {string} id - The ID of the input element
+     * @returns {string} - The value of the input element
+     */
+    getInputValue(id) {
+        const element = document.getElementById(id);
+        return element ? element.value : '';
+    },
+
+    /**
+     * Set the value of an input element
+     * @param {string} id - The ID of the input element
+     * @param {string} value - The value to set
+     */
+    setInputValue(id, value) {
+        const element = document.getElementById(id);
         if (element) {
-            element.textContent = message;
-            this.showElement(element);
+            element.value = value;
         }
     },
-    
+
     /**
-     * Clear error messages
-     * @param {HTMLElement} element - The error message element
+     * Add an event listener to an element
+     * @param {string} id - The ID of the element
+     * @param {string} event - The event type (e.g., 'click')
+     * @param {Function} handler - The event handler function
      */
-    clearError(element) {
+    addEventListener(id, event, handler) {
+        const element = document.getElementById(id);
         if (element) {
-            element.textContent = '';
-            this.hideElement(element);
-        }
-    },
-    
-    /**
-     * Toggle display of a section
-     * @param {HTMLElement} element - The element to toggle
-     * @param {boolean} show - Whether to show or hide the element
-     */
-    toggleSection(element, show) {
-        if (show) {
-            this.showElement(element);
-        } else {
-            this.hideElement(element);
+            element.addEventListener(event, handler);
         }
     }
 };

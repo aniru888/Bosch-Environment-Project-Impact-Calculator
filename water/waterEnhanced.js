@@ -51,7 +51,9 @@ function setupEnhancedWaterUI() {
 function toggleSeasonalInputs(event) {
     const seasonalInputs = document.getElementById('seasonal-inputs');
     if (seasonalInputs) {
-        seasonalInputs.style.display = event.target.checked ? 'block' : 'none';
+        // Removed style.display manipulation
+        // Seasonal inputs will now always be visible if present in the DOM
+        console.log('Seasonal inputs visibility toggled (now always visible)');
     }
 }
 
@@ -61,11 +63,11 @@ function toggleSeasonalInputs(event) {
 function toggleAdvancedOptions() {
     const advancedSection = document.getElementById('water-advanced-options');
     if (advancedSection) {
-        if (advancedSection.classList.contains('hidden')) {
-            advancedSection.classList.remove('hidden');
-        } else {
-            advancedSection.classList.add('hidden');
-        }
+        // Removed classList manipulation for 'hidden'
+        // Advanced options will now always be visible if present in the DOM
+        console.log('Advanced options visibility toggled (now always visible)');
+        // Example: Toggle a different class or attribute if needed for styling
+        // advancedSection.classList.toggle('options-active');
     }
 }
 
