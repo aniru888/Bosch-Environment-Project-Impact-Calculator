@@ -84,11 +84,16 @@ function calculateForest(formData) {
         console.log('Triggering results event...');
         window.forestCalcs.eventSystem.onResults(results);
         
+        // Directly display results as backup
+        if (window.forestDOM && window.forestDOM.displayResults) {
+            window.forestDOM.displayResults(results);
+        }
+
         // Update cost analysis
         if (window.forestDOM) {
             window.forestDOM.updateCostAnalysis(costAnalysis);
             
-            // Get carbon price from form data
+            // Get carbon price from formData
             const carbonPrice = formData.carbonPrice || 5;
             window.forestDOM.updateCarbonCredits(results.summary.totalCO2e, carbonPrice);
         }

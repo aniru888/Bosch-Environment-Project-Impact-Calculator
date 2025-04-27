@@ -170,42 +170,49 @@ function clearForestErrors() {
  */
 function displayForestResults(results) {
     console.log('displayForestResults called with:', results);
-    console.log('Results summary exists:', !!results?.summary);
-    console.log('Results yearly exists:', !!results?.yearly);
-    console.log('Results section element exists:', !!window.appGlobals.forest.resultsSection);
     
     // Check if the main results container exists
     if (!window.appGlobals.forest.resultsSection) {
         console.error('Forest results section element (ID: forest-results) not found in the DOM. Cannot display results.');
-        return; // Stop execution if the main container is missing
+        return;
+    }
+    
+    // Show the results section first - this is critical
+    console.log('Attempting to show results section...');
+    if (window.appGlobals.forest.resultsSection.classList.contains('hidden')) {
+        console.log('Results section was hidden, removing hidden class...');
+    }
+    window.appGlobals.forest.resultsSection.classList.remove('hidden');
+    window.appGlobals.forest.resultsSection.style.display = 'block';
+    
+    // Make sure we have valid data
+    if (!results || !results.yearly || results.yearly.length === 0 || !results.summary) {
+        console.error('Invalid results data:', results);
+        showForestError('No calculation results or summary to display.');
+        return;
     }
     
     // Store results
     window.appGlobals.lastForestResults = results;
     
-    // Show the results section
-    console.log('Showing results section');
-    domUtils.showElement(window.appGlobals.forest.resultsSection);
-    
-    // Make sure we have valid data
-    if (!results || !results.yearly || results.yearly.length === 0 || !results.summary) {
-        showForestError('No calculation results or summary to display.');
-        return;
-    }
-    
-    // Update summary metrics
+    console.log('Updating summary metrics...');
     updateSummaryMetrics(results.summary);
     
-    // Create or update sequestration chart
+    console.log('Creating sequestration chart...');
     createSequestrationChart(results, 'sequestration-chart');
     
     // Check if the results table body exists before trying to update it
     if (!window.appGlobals.forest.resultsBody) {
         console.error('Forest results table body element (ID: forest-results-body) not found in the DOM. Cannot update table.');
     } else {
-        // Update the results table only if the body element exists
+        console.log('Updating results table...');
         updateResultsTable(results.yearly);
     }
+    
+    // Final visibility check
+    const computedStyle = window.getComputedStyle(window.appGlobals.forest.resultsSection);
+    console.log('Final results section display style:', computedStyle.display);
+    console.log('Final results section visibility:', computedStyle.visibility);
     console.log('Results display completed');
 }
 
