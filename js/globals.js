@@ -146,46 +146,43 @@ document.addEventListener('DOMContentLoaded', () => {
 // Log initialization
 console.log('Global namespaces and initialization functions defined');
 
-// Add DOMContentLoaded listener for delayed initialization
+// Add DOMContentLoaded listener for initialization
 document.addEventListener('DOMContentLoaded', () => {
     // Set loading state
     document.body.classList.add('loading');
-    console.log('DOM loaded, setting loading state and starting 2s delay...');
+    console.log('DOM loaded, setting loading state and checking modules...');
 
-    // Initialize after a short delay to ensure all modules are loaded
-    setTimeout(() => {
-        console.log('2s delay finished, checking modules...');
-        if (window.checkModulesLoaded()) {
-            console.log('All modules loaded successfully, initializing application...');
-            
-            // Initialize event systems (moved from main.js init)
-            if (!window.initializeEventSystems()) {
-                console.error('Failed to initialize event systems');
-                // Optionally show an error message to the user here
-                document.body.classList.remove('loading'); // Remove loading state even on error
-                return; // Stop initialization
-            }
-            console.log('Event systems initialized');
-
-            // Initialize the main application (moved from main.js DOMContentLoaded)
-            try {
-                const app = new AppMain();
-                app.init(); // Call the modified init method
-                window.app = app; // Store app instance globally
-                console.log('AppMain initialized successfully.');
-            } catch (error) {
-                console.error('Fatal error during application initialization:', error);
-                // Optionally show an error message to the user here
-            }
-            
-            // Remove loading state after successful initialization
-            document.body.classList.remove('loading');
-            console.log('Initialization complete, loading state removed.');
-
-        } else {
-            console.error('Failed to initialize application: missing required modules');
-            // Show error message to user or handle appropriately
+    // Check modules immediately
+    if (window.checkModulesLoaded()) {
+        console.log('All modules loaded successfully, initializing application...');
+        
+        // Initialize event systems
+        if (!window.initializeEventSystems()) {
+            console.error('Failed to initialize event systems');
+            // Optionally show an error message to the user here
             document.body.classList.remove('loading'); // Remove loading state even on error
+            return; // Stop initialization
         }
-    }, 2000); // 2-second delay
+        console.log('Event systems initialized');
+
+        // Initialize the main application
+        try {
+            const app = new AppMain();
+            app.init(); // Call the modified init method
+            window.app = app; // Store app instance globally
+            console.log('AppMain initialized successfully.');
+        } catch (error) {
+            console.error('Fatal error during application initialization:', error);
+            // Optionally show an error message to the user here
+        }
+        
+        // Remove loading state after successful initialization
+        document.body.classList.remove('loading');
+        console.log('Initialization complete, loading state removed.');
+
+    } else {
+        console.error('Failed to initialize application: missing required modules');
+        // Show error message to user or handle appropriately
+        document.body.classList.remove('loading'); // Remove loading state even on error
+    }
 });

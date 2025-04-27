@@ -104,20 +104,15 @@ function calculateSequestration(data) {
     } = data;
     
     const results = {
-        yearly: [],
-        summary: {
-            totalCO2e: 0,
-            avgAnnualCO2e: 0,
-            finalCarbonStock: 0
-        }
+        yearly: []
     };
     
     // Calculate initial number of trees
     const initialTrees = area * plantingDensity;
     
     // Calculate yearly values
-    let cumulativeCO2e = 0;
     let previousCO2e = 0;
+    let cumulativeCO2e = 0;
     
     for (let year = 1; year <= projectDuration; year++) {
         // Calculate surviving trees based on mortality rate
@@ -166,15 +161,6 @@ function calculateSequestration(data) {
         });
     }
     
-    // Calculate summary metrics
-    const finalYear = results.yearly[results.yearly.length - 1];
-    results.summary.totalCO2e = finalYear.cumulativeCO2e;
-    results.summary.avgAnnualCO2e = finalYear.cumulativeCO2e / projectDuration;
-    results.summary.finalCarbonStock = finalYear.carbonContent;
-
-    // *** ADD LOGGING HERE ***
-    console.log('[forestCalcs.js calculateSequestration] Final summary:', JSON.stringify(results.summary, null, 2));
-    
     return results;
 }
 
@@ -185,14 +171,9 @@ function calculateSequestration(data) {
  * @returns {object} - Sequestration results
  */
 function calculateSequestrationMultiSpecies(data, speciesData) {
-    // Initialize results structure
+    // Initialize results structure with just yearly array
     const results = {
         yearly: [],
-        summary: {
-            totalCO2e: 0,
-            avgAnnualCO2e: 0,
-            finalCarbonStock: 0
-        },
         species: []
     };
     
@@ -212,25 +193,17 @@ function calculateSequestrationMultiSpecies(data, speciesData) {
         // Calculate sequestration for this species
         const speciesResults = calculateSequestration(speciesSpecificData);
         
-        // Store species results
+        // Store species results without summary
         results.species.push({
             name: species.name,
             proportion: species.proportion,
-            co2e: speciesResults.summary.totalCO2e
+            co2e: speciesResults.yearly[speciesResults.yearly.length - 1].cumulativeCO2e
         });
-        
-        // Add to total CO2e
-        results.summary.totalCO2e += speciesResults.summary.totalCO2e;
-        results.summary.finalCarbonStock += speciesResults.summary.finalCarbonStock;
         
         // Merge yearly data
         if (results.yearly.length === 0) {
-            // First species, initialize yearly data
             results.yearly = speciesResults.yearly.map(year => ({
-                ...year,
-                co2e: year.co2e,
-                annualIncrement: year.annualIncrement,
-                cumulativeCO2e: year.cumulativeCO2e
+                ...year
             }));
         } else {
             // Add this species' data to existing yearly data
@@ -242,12 +215,6 @@ function calculateSequestrationMultiSpecies(data, speciesData) {
         }
     }
     
-    // Calculate average annual CO2e
-    results.summary.avgAnnualCO2e = results.summary.totalCO2e / data.projectDuration;
-    
-    // *** ADD LOGGING HERE ***
-    console.log('[forestCalcs.js calculateSequestrationMultiSpecies] Final summary:', JSON.stringify(results.summary, null, 2));
-
     return results;
 }
 
@@ -259,8 +226,11 @@ function calculateSequestrationMultiSpecies(data, speciesData) {
  * @returns {object} - Cost analysis
  */
 function calculateForestCostAnalysis(projectCost, area, results) {
+    // Get total CO2e from the final year's cumulative value
+    const totalCO2e = results.yearly?.[results.yearly.length - 1]?.cumulativeCO2e || 0;
+    
     // Calculate cost per tonne of CO2e
-    const costPerTonne = projectCost / results.summary.totalCO2e;
+    const costPerTonne = totalCO2e > 0 ? projectCost / totalCO2e : 0;
     
     // Calculate cost per hectare
     const costPerHectare = projectCost / area;

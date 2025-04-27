@@ -10,9 +10,6 @@
 function initWater() {
     console.log('Initializing Water Calculator');
     
-    // Use the globally initialized event system
-    window.initializeEventSystems();
-    
     // Initialize modules in the correct order
     // DOM module needs to be initialized first since other modules may depend on it
     if (window.waterDOM) {

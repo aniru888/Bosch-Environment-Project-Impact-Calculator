@@ -43,6 +43,36 @@ function initForestCalculator() {
 }
 
 /**
+ * Calculate summary metrics directly from yearly results 
+ * @param {Array} yearlyData - The yearly calculation results
+ * @returns {Object} - Summary metrics
+ */
+function calculateSummaryFromYearlyData(yearlyData) {
+    if (!yearlyData || yearlyData.length === 0) {
+        console.error('No yearly data available to calculate summary');
+        return {
+            totalCO2e: 0,
+            avgAnnualCO2e: 0,
+            finalCarbonStock: 0
+        };
+    }
+    
+    // Get the final year for total values
+    const finalYear = yearlyData[yearlyData.length - 1];
+    
+    // Calculate average annual CO2e by summing all annual increments and dividing by years
+    const totalYears = yearlyData.length;
+    const annualCO2eSum = yearlyData.reduce((sum, year) => sum + (year.annualIncrement || 0), 0);
+    const avgAnnualCO2e = totalYears > 0 ? annualCO2eSum / totalYears : 0;
+    
+    return {
+        totalCO2e: finalYear.cumulativeCO2e || 0,
+        avgAnnualCO2e: avgAnnualCO2e,
+        finalCarbonStock: finalYear.carbonContent || 0
+    };
+}
+
+/**
  * Calculate forest sequestration
  * @param {Object} formData - Form data object
  */
@@ -67,29 +97,21 @@ function calculateForest(formData) {
             results = window.forestCalcs.calculateSequestration(formData);
         }
 
-        // SIMPLIFIED APPROACH: Clean up results to ensure it has a proper summary structure
         if (!results) {
             throw new Error('Calculation produced no results');
         }
 
-        // Ensure summary exists - this is critical
-        if (!results.summary) {
-            console.error('Creating missing summary property');
+        // Generate summary directly from yearly data to ensure consistency
+        if (results.yearly && results.yearly.length > 0) {
+            results.summary = calculateSummaryFromYearlyData(results.yearly);
+            console.log('Summary recalculated from yearly data:', results.summary);
+        } else {
+            console.error('No yearly data available, creating empty summary');
             results.summary = {
                 totalCO2e: 0,
                 avgAnnualCO2e: 0,
                 finalCarbonStock: 0
             };
-            
-            // Try to extract from yearly data if available
-            if (results.yearly && results.yearly.length > 0) {
-                const finalYear = results.yearly[results.yearly.length - 1];
-                if (finalYear) {
-                    results.summary.totalCO2e = finalYear.cumulativeCO2e || 0;
-                    results.summary.avgAnnualCO2e = finalYear.cumulativeCO2e / formData.projectDuration || 0;
-                    results.summary.finalCarbonStock = finalYear.carbonContent || 0;
-                }
-            }
         }
         
         // Store original results directly in global state
@@ -101,39 +123,25 @@ function calculateForest(formData) {
             formData.area,
             results
         );
+        // Add costAnalysis to results object for event listener
+        results.costAnalysis = costAnalysis;
+
+        // Calculate enhanced features and add them to results
+        if (window.forestEnhanced) {
+            const enhancedFeatures = window.forestEnhanced.calculateAllEnhancedFeatures(formData, results, speciesData);
+            results.biodiversity = enhancedFeatures.biodiversity;
+            results.beneficiaries = enhancedFeatures.beneficiaries;
+            // Note: Green cover and carbon credits are handled within forestDOM based on results
+        }
 
         // Display diagnostics
-        console.log('Final results structure:', {
-            hasResults: !!results,
-            hasSummary: !!results?.summary,
-            summary: results?.summary
-        });
+        console.log('Final results structure for event:', results);
 
-        // Trigger results event for UI update
+        // Trigger results event for UI update (now includes costAnalysis, biodiversity, beneficiaries)
         if (window.forestCalcs && window.forestCalcs.eventSystem) {
             window.forestCalcs.eventSystem.onResults(results);
         } else {
             console.error('Forest event system not initialized');
-        }
-        
-        // Update cost analysis and other UI elements directly
-        if (window.forestDOM) {
-            // Make direct calls to DOM update functions with explicit arguments
-            // Ensure we're using the forest DOM module specifically
-            const forestDOM = window.forestDOM;
-            forestDOM.updateCostAnalysis(costAnalysis);
-            
-            // Get carbon price from formData
-            const carbonPrice = formData.carbonPrice || 5;
-            forestDOM.updateCarbonCredits(results.summary.totalCO2e, carbonPrice);
-            
-            // Force display of results in case event system fails
-            forestDOM.displayResults(results);
-        }
-        
-        // Update enhanced features
-        if (window.forestEnhanced) {
-            window.forestEnhanced.updateAllEnhancedFeatures(formData, results, speciesData);
         }
         
         // Track calculation in analytics - ensure summary object is passed correctly

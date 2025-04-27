@@ -47,6 +47,9 @@ function initForestDOM(options = {}) {
     window.appGlobals.forest.resultsSection = document.getElementById('forest-results');
     window.appGlobals.forest.resultsBody = document.getElementById('forest-results-body');
     window.appGlobals.forest.errorElement = document.getElementById('forest-error');
+    // Cache input elements used in event handlers or updates
+    window.appGlobals.forest.carbonPriceInput = document.getElementById('forest-carbon-price');
+    window.appGlobals.forest.riskBufferInput = document.getElementById('risk-buffer-input');
 
     // Ensure required elements exist
     if (!window.appGlobals.forest.resultsSection) {
@@ -145,7 +148,29 @@ function registerEventHandlers() {
             console.error('Received empty results');
             return;
         }
-        displayForestResults(results);
+        // Ensure results integrity (creates a safe copy)
+        const safeResults = _ensureResultsIntegrity(results);
+        if (!safeResults) return; // Stop if integrity check fails
+
+        // Call all necessary update functions based on the received results
+        displayForestResults(safeResults); // Handles summary, table, chart
+
+        // Update enhanced sections using data from the results object
+        if (safeResults.costAnalysis) {
+            updateCostAnalysis(safeResults.costAnalysis);
+        }
+        if (safeResults.summary) {
+            // Get necessary values for carbon credits update using cached elements
+            const carbonPrice = parseFloat(window.appGlobals.forest.carbonPriceInput?.value) || 5;
+            const riskBuffer = parseFloat(window.appGlobals.forest.riskBufferInput?.value) || 20;
+            updateCarbonCredits(safeResults.summary.totalCO2e, carbonPrice, riskBuffer);
+        }
+        if (safeResults.biodiversity) {
+            updateBiodiversity(safeResults.biodiversity);
+        }
+        if (safeResults.beneficiaries) {
+            updateBeneficiaries(safeResults.beneficiaries);
+        }
     });
     
     // Register reset handler
@@ -186,10 +211,11 @@ function clearForestErrors() {
 
 /**
  * Display forest calculation results
- * @param {object} results - Calculation results
+ * @param {object} results - Calculation results (already integrity-checked)
  */
 function displayForestResults(results) {
-    results = _ensureResultsIntegrity(results); // Ensure results integrity before using
+    // REMOVED: _ensureResultsIntegrity call (done in event handler)
+    // REMOVED: window.appGlobals.lastForestResults = results; (done in forestMain)
 
     if (!results) {
         console.error('No results to display');
@@ -197,11 +223,8 @@ function displayForestResults(results) {
         return;
     }
 
-    console.log('Displaying forest results:', results);
+    console.log('Displaying forest results (core):', results);
     clearForestErrors(); // Clear previous errors
-
-    // Store results globally
-    window.appGlobals.lastForestResults = results;
 
     // Update summary metrics
     updateSummaryMetrics(results.summary);
@@ -212,20 +235,8 @@ function displayForestResults(results) {
     // Create or update sequestration chart
     createSequestrationChart(results, 'sequestration-chart');
 
-    // Update enhanced sections only if results contain the data
-    if (results.costAnalysis) {
-        updateCostAnalysis(results.costAnalysis);
-    }
-    if (results.summary) {
-        const carbonPrice = parseFloat(window.appGlobals.forest.carbonPriceInput?.value) || 5;
-        updateCarbonCredits(results.summary.totalCO2e, carbonPrice);
-    }
-    if (results.biodiversity) {
-        updateBiodiversity(results.biodiversity);
-    }
-    if (results.beneficiaries) {
-        updateBeneficiaries(results.beneficiaries);
-    }
+    // REMOVED: Calls to updateCostAnalysis, updateCarbonCredits, updateBiodiversity, updateBeneficiaries
+    // These are now handled by the event listener in registerEventHandlers
 
     // Remove loading indicator AFTER results are displayed
     document.body.classList.remove('loading');
@@ -256,6 +267,7 @@ function updateSummaryMetrics(summary) {
         const avgAnnualCO2eElement = document.getElementById('avg-annual-co2e');
         const finalCarbonElement = document.getElementById('final-carbon');
         
+        // Use direct utils access
         if (totalCO2eElement) totalCO2eElement.textContent = utils.formatNumber(totalCO2eValue, 2);
         if (avgAnnualCO2eElement) avgAnnualCO2eElement.textContent = utils.formatNumber(avgAnnualCO2eValue, 2);
         if (finalCarbonElement) finalCarbonElement.textContent = utils.formatNumber(finalCarbonStockValue, 2);
@@ -263,16 +275,7 @@ function updateSummaryMetrics(summary) {
         console.log('Summary metrics updated directly in DOM');
     } catch (err) {
         console.error('Error updating summary metrics directly:', err);
-        
-        // Fallback to using domUtils
-        try {
-            domUtils.updateMetric('total-co2e', totalCO2eValue, 2);
-            domUtils.updateMetric('avg-annual-co2e', avgAnnualCO2eValue, 2);
-            domUtils.updateMetric('final-carbon', finalCarbonStockValue, 2);
-            console.log('Summary metrics updated using domUtils');
-        } catch (err2) {
-            console.error('Both direct and domUtils updates failed:', err2);
-        }
+        // Removed fallback to domUtils as requested
     }
     
     // Optional: Make the results section visible if it's hidden
@@ -335,7 +338,7 @@ function updateBeneficiaries(beneficiaries) {
  * @param {Array} yearlyData - Array of yearly data objects
  */
 function updateForestResultsTable(yearlyData) {
-    // Clear existing rows
+    // Clear existing rows - Use direct domUtils access
     domUtils.clearElement(window.appGlobals.forest.resultsBody);
     
     // Add rows for each year
@@ -349,7 +352,7 @@ function updateForestResultsTable(yearlyData) {
         const annualIncrementValue = data.annualIncrement || 0;
         const cumulativeCO2eValue = data.cumulativeCO2e || 0;
 
-        // Format values for display
+        // Format values for display - Use direct utils and domUtils access
         const row = domUtils.createTableRow([
             yearValue,
             survivingTreesValue,
@@ -471,9 +474,9 @@ function resetForestUI() {
     console.log('Resetting Forest UI');
     clearForestErrors();
 
-    // Clear results table
+    // Clear results table - Use direct domUtils access
     if (window.appGlobals.forest.resultsBody) {
-        window.domUtils.clearElement(window.appGlobals.forest.resultsBody);
+        domUtils.clearElement(window.appGlobals.forest.resultsBody);
     }
 
     // Clear summary metrics (optional: set to default values like '0' or '-')
