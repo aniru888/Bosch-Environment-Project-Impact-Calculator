@@ -177,9 +177,23 @@ function displayForestResults(results) {
         return;
     }
 
-    // Show the results section first
-    window.appGlobals.forest.resultsSection.classList.remove('hidden');
-    window.appGlobals.forest.resultsSection.style.display = 'block';
+    // Show the results section first and log visibility state
+    const resultsSection = window.appGlobals.forest.resultsSection;
+    console.log('Results section visibility before:', {
+        display: resultsSection.style.display,
+        classList: Array.from(resultsSection.classList),
+        computedStyle: window.getComputedStyle(resultsSection).display
+    });
+
+    // Use domUtils to show element, which handles both class and style
+    domUtils.showElement(resultsSection);
+    resultsSection.style.display = 'block'; // Ensure block display
+
+    console.log('Results section visibility after:', {
+        display: resultsSection.style.display,
+        classList: Array.from(resultsSection.classList),
+        computedStyle: window.getComputedStyle(resultsSection).display
+    });
 
     // Make sure we have valid data
     if (!results || !results.yearly || results.yearly.length === 0 || !results.summary) {
@@ -448,7 +462,13 @@ function createSequestrationChart(results, chartElementId) {
  * Reset the forest UI
  */
 function resetForestUI() {
-    // Instead of hiding, just clear the content but keep it visible
+    // Hide the results section
+    if (window.appGlobals.forest.resultsSection) {
+        window.appGlobals.forest.resultsSection.classList.add('hidden');
+        window.appGlobals.forest.resultsSection.style.display = 'none';
+    }
+
+    // Clear element contents
     domUtils.clearElement(document.getElementById('forest-results-table-body'));
     domUtils.clearElement(document.getElementById('total-co2e'));
     domUtils.clearElement(document.getElementById('avg-annual-co2e'));
