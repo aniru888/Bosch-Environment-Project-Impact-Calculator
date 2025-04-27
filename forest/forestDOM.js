@@ -169,51 +169,45 @@ function clearForestErrors() {
  * @param {object} results - Calculation results
  */
 function displayForestResults(results) {
-    console.log('displayForestResults called with:', results);
-    
+    console.log('Displaying forest results...'); // Keep one initial log
+
     // Check if the main results container exists
     if (!window.appGlobals.forest.resultsSection) {
         console.error('Forest results section element (ID: forest-results) not found in the DOM. Cannot display results.');
         return;
     }
-    
-    // Show the results section first - this is critical
-    console.log('Attempting to show results section...');
-    if (window.appGlobals.forest.resultsSection.classList.contains('hidden')) {
-        console.log('Results section was hidden, removing hidden class...');
-    }
+
+    // Show the results section first
     window.appGlobals.forest.resultsSection.classList.remove('hidden');
     window.appGlobals.forest.resultsSection.style.display = 'block';
-    
+
     // Make sure we have valid data
     if (!results || !results.yearly || results.yearly.length === 0 || !results.summary) {
-        console.error('Invalid results data:', results);
+        console.error('Invalid results data received for display:', results);
         showForestError('No calculation results or summary to display.');
         return;
     }
-    
+
     // Store results
     window.appGlobals.lastForestResults = results;
-    
-    console.log('Updating summary metrics...');
-    updateSummaryMetrics(results.summary);
-    
-    console.log('Creating sequestration chart...');
-    createSequestrationChart(results, 'sequestration-chart');
-    
-    // Check if the results table body exists before trying to update it
-    if (!window.appGlobals.forest.resultsBody) {
-        console.error('Forest results table body element (ID: forest-results-body) not found in the DOM. Cannot update table.');
-    } else {
-        console.log('Updating results table...');
-        updateForestResultsTable(results.yearly); // UPDATED: Call the renamed function
-    }
-    
-    // Final visibility check
-    const computedStyle = window.getComputedStyle(window.appGlobals.forest.resultsSection);
-    console.log('Final results section display style:', computedStyle.display);
-    console.log('Final results section visibility:', computedStyle.visibility);
-    console.log('Results display completed');
+
+    // Defer DOM updates to allow rendering after section is made visible
+    setTimeout(() => {
+        try {
+            updateSummaryMetrics(results.summary);
+            createSequestrationChart(results, 'sequestration-chart');
+
+            if (!window.appGlobals.forest.resultsBody) {
+                console.error('Forest results table body element (ID: forest-results-body) not found in the DOM. Cannot update table.');
+            } else {
+                updateForestResultsTable(results.yearly);
+            }
+            console.log('Forest results display updated.'); // Log completion
+        } catch (error) {
+            console.error('Error during deferred DOM update for forest results:', error);
+            showForestError(`Error displaying results: ${error.message}`);
+        }
+    }, 0); // Delay of 0ms pushes execution after current rendering cycle
 }
 
 /**
@@ -221,37 +215,32 @@ function displayForestResults(results) {
  * @param {object} summary - Summary results
  */
 function updateSummaryMetrics(summary) {
-    // We trust 'summary' arrives here based on previous logs.
-    // Let's directly check the properties before passing them.
-
+    // Directly pass values, assuming they are correct now due to timing fix
     const totalCO2eValue = summary?.totalCO2e;
     const avgAnnualCO2eValue = summary?.avgAnnualCO2e;
     const finalCarbonStockValue = summary?.finalCarbonStock;
 
-    // Log the values *just before* they are used.
-    console.log(`[updateSummaryMetrics] Values to format - total: ${totalCO2eValue}, avg: ${avgAnnualCO2eValue}, final: ${finalCarbonStockValue}`);
+    // Removed the specific value log from here
 
-    // Check if the elements exist before updating
     const totalCO2eElement = document.getElementById('total-co2e');
     const avgAnnualCO2eElement = document.getElementById('avg-annual-co2e');
     const finalCarbonElement = document.getElementById('final-carbon');
 
+    // Removed element finding logs from here
+
     if (totalCO2eElement) {
-        // Pass the explicitly checked value
         domUtils.updateMetric('total-co2e', totalCO2eValue, 1);
     } else {
         console.error('Element with ID "total-co2e" not found in HTML');
     }
 
     if (avgAnnualCO2eElement) {
-        // Pass the explicitly checked value
         domUtils.updateMetric('avg-annual-co2e', avgAnnualCO2eValue, 1);
     } else {
         console.error('Element with ID "avg-annual-co2e" not found in HTML');
     }
 
     if (finalCarbonElement) {
-        // Pass the explicitly checked value
         domUtils.updateMetric('final-carbon', finalCarbonStockValue, 1);
     } else {
         console.error('Element with ID "final-carbon" not found in HTML');
