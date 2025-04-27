@@ -114,7 +114,7 @@ function calculateForest(formData) {
             
             // Get carbon price from formData
             const carbonPrice = formData.carbonPrice || 5;
-            window.forestDOM.updateCarbonCredits(results.summary.totalCO2e, carbonPrice);
+            window.forestDOM.updateCarbonCredits(results.summary.totalco2e, carbonPrice);
         }
         
         // Update enhanced features
