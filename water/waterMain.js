@@ -82,13 +82,26 @@ function calculateWaterImpact(form) {
         const formData = getFormData(form);
         
         // Validate form data
-        if (!validateData(formData)) {
-            return;
+        if (!formData || typeof formData !== 'object') {
+            throw new Error('Invalid form data provided');
+        }
+
+        // Ensure required numeric fields exist and are valid numbers
+        const requiredNumericFields = ['rainFall', 'runoffCoefficient', 'captureEfficiency', 'waterProjectCost', 'waterValue'];
+        for (const field of requiredNumericFields) {
+            if (formData[field] === undefined || formData[field] === null || isNaN(Number(formData[field]))) {
+                throw new Error(`${field} is required and must be a valid number`);
+            }
         }
         
         // Calculate water capture
         const results = window.waterCalcs.calculateWaterCapture(formData);
         
+        // Validate calculation results
+        if (!results || !results.summary || typeof results.summary.totalWaterKL === 'undefined') {
+            throw new Error('Invalid calculation results');
+        }
+
         // Store results in global variable
         window.appGlobals.lastWaterResults = results;
         

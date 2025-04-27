@@ -98,11 +98,10 @@ class AppMain {
                 if (!this.modules.forest) {
                     throw new Error('Forest module initialization failed');
                 }
-                window.appGlobals.modulesInitialized = true;
                 console.log('Forest module registered successfully');
             } else {
                 console.error('Forest calculator module not found or initialization function missing');
-                return false;
+                return false; // Stop if a critical module fails
             }
             
             // Initialize water calculator module
@@ -114,7 +113,7 @@ class AppMain {
                 console.log('Water module registered successfully');
             } else {
                 console.error('Water calculator module not found or initialization function missing');
-                return false;
+                return false; // Stop if a critical module fails
             }
 
             // Add tab change handlers to reset forms when switching tabs
@@ -136,10 +135,15 @@ class AppMain {
                     }
                 });
             }
-            
+
+            // All modules initialized successfully
+            window.appGlobals.modulesInitialized = true; // Set flag here
+            console.log('All modules registered successfully.');
             return true;
+
         } catch (error) {
             console.error('Error during module registration:', error);
+            window.appGlobals.modulesInitialized = false; // Ensure flag is false on error
             return false;
         }
     }

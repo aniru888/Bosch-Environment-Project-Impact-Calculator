@@ -169,57 +169,45 @@ function clearForestErrors() {
  * @param {object} results - Calculation results
  */
 function displayForestResults(results) {
-    console.log('displayForestResults called with:', results);
-    console.log('Results summary exists:', !!results?.summary);
-    console.log('Results yearly exists:', !!results?.yearly);
-    console.log('Results section element exists:', !!window.appGlobals.forest.resultsSection);
-    
+    console.log('Displaying forest results...'); // Keep one initial log
+
     // Check if the main results container exists
     if (!window.appGlobals.forest.resultsSection) {
         console.error('Forest results section element (ID: forest-results) not found in the DOM. Cannot display results.');
-        return; // Stop execution if the main container is missing
-    }
-    
-    // Store results
-    window.appGlobals.lastForestResults = results;
-    
-    // Show the results section
-    console.log('Showing results section');
-    domUtils.showElement(window.appGlobals.forest.resultsSection);
-    
-    // Make sure we have valid data
-    if (!results || !results.yearly || results.yearly.length === 0) {
-        showForestError('No calculation results to display.');
         return;
     }
-    
-    // Get data from the final year row for summary (in case summary wasn't properly calculated)
-    const finalYearData = results.yearly[results.yearly.length - 1];
-    
-    // Update summary with values from final row if needed
-    if (!results.summary) {
-        results.summary = {};
+
+    // Show the results section first
+    window.appGlobals.forest.resultsSection.classList.remove('hidden');
+    window.appGlobals.forest.resultsSection.style.display = 'block';
+
+    // Make sure we have valid data
+    if (!results || !results.yearly || results.yearly.length === 0 || !results.summary) {
+        console.error('Invalid results data received for display:', results);
+        showForestError('No calculation results or summary to display.');
+        return;
     }
-    
-    // Ensure summary has the correct values from final row
-    results.summary.totalCO2e = finalYearData.cumulativeCO2e;
-    results.summary.avgAnnualCO2e = finalYearData.cumulativeCO2e / results.yearly.length;
-    results.summary.finalCarbonStock = finalYearData.carbonContent;
-    
-    // Update summary metrics
-    updateSummaryMetrics(results.summary);
-    
-    // Create or update sequestration chart
-    createSequestrationChart(results, 'sequestration-chart');
-    
-    // Check if the results table body exists before trying to update it
-    if (!window.appGlobals.forest.resultsBody) {
-        console.error('Forest results table body element (ID: forest-results-body) not found in the DOM. Cannot update table.');
-    } else {
-        // Update the results table only if the body element exists
-        updateResultsTable(results.yearly);
-    }
-    console.log('Results display completed');
+
+    // Store results
+    window.appGlobals.lastForestResults = results;
+
+    // Defer DOM updates to allow rendering after section is made visible
+    setTimeout(() => {
+        try {
+            updateSummaryMetrics(results.summary);
+            createSequestrationChart(results, 'sequestration-chart');
+
+            if (!window.appGlobals.forest.resultsBody) {
+                console.error('Forest results table body element (ID: forest-results-body) not found in the DOM. Cannot update table.');
+            } else {
+                updateForestResultsTable(results.yearly);
+            }
+            console.log('Forest results display updated.'); // Log completion
+        } catch (error) {
+            console.error('Error during deferred DOM update for forest results:', error);
+            showForestError(`Error displaying results: ${error.message}`);
+        }
+    }, 0); // Delay of 0ms pushes execution after current rendering cycle
 }
 
 /**
@@ -227,29 +215,40 @@ function displayForestResults(results) {
  * @param {object} summary - Summary results
  */
 function updateSummaryMetrics(summary) {
-    console.log('Updating summary metrics with:', summary);
-    
-    // Check if the elements exist before updating
-    const totalCO2eElement = document.getElementById('total-co2e');
-    const avgAnnualCO2eElement = document.getElementById('avg-annual-co2e');
-    const finalCarbonElement = document.getElementById('final-carbon');
-    
-    if (!totalCO2eElement) {
-        console.error('Element with ID "total-co2e" not found in HTML');
-    } else {
-        domUtils.updateMetric('total-co2e', summary.totalCO2e, 1);
+    if (!summary) {
+        console.error('No summary data received in updateSummaryMetrics');
+        return;
     }
+
+    // Extract values directly without fallbacks
+    const totalCO2eValue = summary.totalCO2e;
+    const avgAnnualCO2eValue = summary.avgAnnualCO2e;
+    const finalCarbonStockValue = summary.finalCarbonStock;
     
-    if (!avgAnnualCO2eElement) {
-        console.error('Element with ID "avg-annual-co2e" not found in HTML');
-    } else {
-        domUtils.updateMetric('avg-annual-co2e', summary.avgAnnualCO2e, 1);
-    }
+    // Update the DOM elements with formatted values
+    domUtils.updateMetric('total-co2e', totalCO2eValue, 2);
+    domUtils.updateMetric('avg-annual-co2e', avgAnnualCO2eValue, 2);
+    domUtils.updateMetric('final-carbon', finalCarbonStockValue, 2);
     
-    if (!finalCarbonElement) {
-        console.error('Element with ID "final-carbon" not found in HTML');
-    } else {
-        domUtils.updateMetric('final-carbon', summary.finalCarbonStock, 1);
+    // Also add a summary display in the results section
+    const summarySection = document.querySelector('.results-summary');
+    if (summarySection) {
+        const summaryHtml = `
+            <div class="summary-box">
+                <h4>Forest Carbon Summary</h4>
+                <p>Total CO₂e: <strong>${utils.formatNumber(totalCO2eValue, 2)} tonnes</strong></p>
+                <p>Average Annual CO₂e: <strong>${utils.formatNumber(avgAnnualCO2eValue, 2)} tonnes/year</strong></p>
+                <p>Final Carbon Stock: <strong>${utils.formatNumber(finalCarbonStockValue, 2)} tonnes</strong></p>
+            </div>
+        `;
+        
+        // Create or update the summary box
+        let summaryBox = summarySection.querySelector('.summary-box');
+        if (!summaryBox) {
+            summarySection.innerHTML += summaryHtml;
+        } else {
+            summaryBox.innerHTML = summaryHtml;
+        }
     }
 }
 
@@ -305,20 +304,36 @@ function updateBeneficiaries(beneficiaries) {
  * Update the results table with yearly data
  * @param {Array} yearlyData - Array of yearly data objects
  */
-function updateResultsTable(yearlyData) {
+function updateForestResultsTable(yearlyData) { // RENAMED function
     // Clear existing rows
     domUtils.clearElement(window.appGlobals.forest.resultsBody);
     
     // Add rows for each year
     yearlyData.forEach(data => {
+        // Add safety checks for potentially missing data points within the loop
+        const year = data.year || 'N/A';
+        const survivingTrees = utils.formatNumber(data.survivingTrees, 0);
+        const growingStock = utils.formatNumber(data.growingStock, 1);
+        const carbonContent = utils.formatNumber(data.carbonContent, 1);
+        const co2e = utils.formatNumber(data.co2e, 1);
+        // Check annualIncrement specifically before formatting
+        const annualIncrementValue = data.annualIncrement;
+        const annualIncrement = utils.formatNumber(annualIncrementValue, 1);
+        const cumulativeCO2e = utils.formatNumber(data.cumulativeCO2e, 1);
+
+        // Log if annualIncrement is problematic before formatting
+        if (annualIncrementValue === undefined || annualIncrementValue === null || isNaN(annualIncrementValue)) {
+             console.warn(`Year ${year}: annualIncrement is invalid:`, annualIncrementValue, 'Formatted as:', annualIncrement);
+        }
+
         const row = domUtils.createTableRow([
-            data.year,
-            utils.formatNumber(data.survivingTrees, 0),
-            utils.formatNumber(data.growingStock, 1),
-            utils.formatNumber(data.carbonContent, 1),
-            utils.formatNumber(data.co2e, 1),
-            utils.formatNumber(data.annualIncrement, 1),
-            utils.formatNumber(data.cumulativeCO2e, 1)
+            year,
+            survivingTrees,
+            growingStock,
+            carbonContent,
+            co2e,
+            annualIncrement, // Pass the formatted (or '0') value
+            cumulativeCO2e
         ]);
         
         window.appGlobals.forest.resultsBody.appendChild(row);

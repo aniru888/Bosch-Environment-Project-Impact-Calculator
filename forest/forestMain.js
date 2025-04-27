@@ -48,8 +48,6 @@ function initForestCalculator() {
  */
 function calculateForest(formData) {
     try {
-        console.log('Starting forest calculation...');
-        
         // Ensure event system is initialized
         if (!window.forestCalcs || !window.forestCalcs.eventSystem) {
             console.error('Forest event system not initialized');
@@ -68,10 +66,9 @@ function calculateForest(formData) {
         } else {
             results = window.forestCalcs.calculateSequestration(formData);
         }
-        console.log('Calculation completed, results:', results);
         
-        // Store results in global variable
-        window.appGlobals.lastForestResults = results;
+        // Store results
+        lastResults = results;
         
         // Calculate cost analysis
         const costAnalysis = window.forestCalcs.calculateForestCostAnalysis(
@@ -80,17 +77,24 @@ function calculateForest(formData) {
             results
         );
 
-        // Trigger results event - this will update the UI through the event system
-        console.log('Triggering results event...');
-        window.forestCalcs.eventSystem.onResults(results);
+        // --- DEBUGGING START ---
+        console.log('Calculation results:', results);
+        // --- DEBUGGING END ---
+
+        // Trigger results event for UI update with defensive check
+        if (window.forestCalcs && window.forestCalcs.eventSystem) {
+            window.forestCalcs.eventSystem.onResults(results);
+        } else {
+            console.error('Forest event system not initialized');
+        }
         
         // Update cost analysis
         if (window.forestDOM) {
             window.forestDOM.updateCostAnalysis(costAnalysis);
             
-            // Get carbon price from form data
+            // Get carbon price from formData
             const carbonPrice = formData.carbonPrice || 5;
-            window.forestDOM.updateCarbonCredits(results.summary.totalCO2e, carbonPrice);
+            window.forestDOM.updateCarbonCredits(results.summary.totalco2e, carbonPrice);
         }
         
         // Update enhanced features
