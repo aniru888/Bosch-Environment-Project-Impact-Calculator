@@ -50,6 +50,19 @@ function calculateForest(formData) {
     try {
         console.log('Starting forest calculation...');
         
+        // Validate form data
+        if (!formData || typeof formData !== 'object') {
+            throw new Error('Invalid form data provided');
+        }
+
+        // Ensure required numeric fields exist and are valid numbers
+        const requiredNumericFields = ['area', 'projectCost', 'carbonPrice'];
+        for (const field of requiredNumericFields) {
+            if (formData[field] === undefined || formData[field] === null || isNaN(Number(formData[field]))) {
+                throw new Error(`${field} is required and must be a valid number`);
+            }
+        }
+        
         // Ensure event system is initialized
         if (!window.forestCalcs || !window.forestCalcs.eventSystem) {
             console.error('Forest event system not initialized');
@@ -68,6 +81,12 @@ function calculateForest(formData) {
         } else {
             results = window.forestCalcs.calculateSequestration(formData);
         }
+
+        // Validate calculation results
+        if (!results || !results.summary || typeof results.summary.totalCO2e === 'undefined') {
+            throw new Error('Invalid calculation results');
+        }
+
         console.log('Calculation completed, results:', results);
         
         // Store results in global variable
