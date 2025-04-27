@@ -171,6 +171,9 @@ function calculateSequestration(data) {
     results.summary.totalCO2e = finalYear.cumulativeCO2e;
     results.summary.avgAnnualCO2e = finalYear.cumulativeCO2e / projectDuration;
     results.summary.finalCarbonStock = finalYear.carbonContent;
+
+    // *** ADD LOGGING HERE ***
+    console.log('[forestCalcs.js calculateSequestration] Final summary:', JSON.stringify(results.summary, null, 2));
     
     return results;
 }
@@ -242,6 +245,9 @@ function calculateSequestrationMultiSpecies(data, speciesData) {
     // Calculate average annual CO2e
     results.summary.avgAnnualCO2e = results.summary.totalCO2e / data.projectDuration;
     
+    // *** ADD LOGGING HERE ***
+    console.log('[forestCalcs.js calculateSequestrationMultiSpecies] Final summary:', JSON.stringify(results.summary, null, 2));
+
     return results;
 }
 
