@@ -39,14 +39,14 @@ body {
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: var(--spacing-medium) var(--spacing-large);
+    padding: var(--spacing-small) var(--spacing-medium); /* Reduced padding */
 }
 
 /* Header styles */
 header {
     background: linear-gradient(to right, var(--bosch-red), #801190, var(--bosch-dark-blue), var(--bosch-medium-blue), #0086C3, var(--bosch-light-blue), #00A77C, var(--bosch-green), var(--bosch-light-green));
     color: var(--white);
-    padding: var(--spacing-small);
+    padding: var(--spacing-small) var(--spacing-medium); /* Reduced padding */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -66,53 +66,60 @@ header {
 /* Titles */
 h1, h2, h3 {
     color: var(--bosch-dark-blue);
-    margin-bottom: var(--spacing-medium);
+    margin-bottom: var(--spacing-small); /* Reduced margin */
 }
 
 .subtitle {
     color: var(--dark-gray);
     font-size: var(--font-size-large);
-    margin-bottom: var(--spacing-large);
+    margin-bottom: var(--spacing-medium); /* Reduced margin */
 }
 
-/* Card */
+/* Generic card styles */
 .card {
     background-color: var(--white);
     border: var(--border-width) solid #ccc;
     border-radius: var(--border-radius);
     padding: var(--spacing-medium);
-    margin-bottom: var(--spacing-large);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: var(--spacing-medium); /* Reduced margin */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Added box shadow */
+    transition: box-shadow 0.3s ease; /* Added transition for hover effect */
 }
 
-/* Metrics Grid */
+.card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Hover effect for card */
+}
+
+/* Metrics grid */
 .metrics-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--spacing-medium);
-    margin-bottom: var(--spacing-large);
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* More compact columns */
+    gap: var(--spacing-small); /* Reduced gap */
+    margin-bottom: var(--spacing-medium); /* Reduced margin */
 }
 
-/* Individual Metric */
+/* Individual metric */
 .metric {
     text-align: center;
+    padding: var(--spacing-small); /* Add some padding inside each metric */
+    border: 1px solid #eee; /* Add a light border */
 }
 
 .metric-value {
     display: block;
-    font-size: 2em;
+    font-size: 2.2em; /* Slightly larger font */
     font-weight: bold;
     margin-bottom: var(--spacing-small);
 }
 
 .metric-label {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-small); /* Slightly smaller font */
     color: var(--dark-gray);
 }
 
-/* Form */
+/* Form layout */
 .form-group {
-    margin-bottom: var(--spacing-large);
+    margin-bottom: var(--spacing-medium); /* Reduced margin */
 }
 
 .form-row {
@@ -120,13 +127,16 @@ h1, h2, h3 {
 }
 
 .form-row label {
-    display: block;
-    margin-bottom: var(--spacing-small);
+    display: grid;
+    grid-template-columns: 1fr 2fr; /* Two column form layout */
+    gap: var(--spacing-small); /* Reduced gap */
+    align-items: center; /* Vertical align */
+    margin-bottom: var(--spacing-small); /* Reduced margin */
 }
 
 /* Inputs and Select */
 input, select {
-    border: var(--border-width) solid #ccc;
+   border: var(--border-width) solid #ccc;
     padding: var(--spacing-small) var(--spacing-medium);
     border-radius: var(--border-radius);
     transition: border-color 0.3s ease;
@@ -140,30 +150,39 @@ input:focus, select:focus {
 }
 
 /* Buttons */
-.btn {
+ .btn {
     padding: var(--spacing-small) var(--spacing-medium);
     border: none;
     border-radius: var(--border-radius);
     cursor: pointer;
     font-size: var(--font-size-base);
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Added transition */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
 }
 
 .btn-primary {
     background-color: var(--bosch-dark-blue);
     color: var(--white);
 }
+.btn-primary:hover {
+    background-color: #003066; /* Darken on hover */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a hover shadow */
+}
 
 .btn-secondary {
     background-color: var(--gray);
     color: var(--dark-gray);
+}
+.btn-secondary:hover {
+    background-color: #ddd; /* Lighten on hover */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a hover shadow */
 }
 
 /* Tables */
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: var(--spacing-large);
+    margin-bottom: var(--spacing-medium); /* Reduced margin */
     background-color: var(--white);
 }
 
@@ -172,11 +191,16 @@ th, td {
     padding: var(--spacing-small);
     border: var(--border-width) solid #ddd;
 }
-
+table:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add hover shadow */
+}
 th {
     background-color: var(--gray);
     font-weight: bold;
 }
+
+
+
 
 /* Forest Section Specific Styling */
 #forest-section h2 {
@@ -208,6 +232,10 @@ th {
     padding: var(--spacing-medium);
     background-color: var(--white);
     border: var(--border-width) solid #ccc;
+    border-radius: var(--border-radius);
+    margin-bottom: var(--spacing-medium); /* Reduced margin */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add shadow */
+    transition: box-shadow 0.3s ease; /* Add transition */
     border-radius: var(--border-radius);
     margin-bottom: var(--spacing-large);
 }
