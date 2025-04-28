@@ -231,9 +231,10 @@ function registerEventHandlers() {
         if (safeResults.beneficiaries) {
             updateBeneficiaries(safeResults.beneficiaries);
         }
-        
-        // Remove loading indicator AFTER results are processed
-        document.body.classList.remove('loading');
+        // Add call for green cover
+        if (safeResults.greenCover) {
+            updateGreenCover(safeResults.greenCover);
+        }
     });
     
     // Register reset handler
@@ -301,8 +302,6 @@ function displayForestResults(results) {
 
     // REMOVED: Calls to updateCostAnalysis, updateCarbonCredits, updateBiodiversity, updateBeneficiaries
     // These are now handled by the event listener in registerEventHandlers
-
-    // REMOVED: Removing loading indicator (done in event handler)
 }
 
 /**
@@ -315,36 +314,20 @@ function updateSummaryMetrics(summary) {
         return;
     }
 
-    // Log the summary object to help debug
-    console.log('Summary data received:', summary);
-
-    // Extract values with proper property names - with explicit fallbacks to zero
+    // Extract values with proper property names and explicit fallbacks
     const totalCO2eValue = summary.totalCO2e ?? 0;
     const avgAnnualCO2eValue = summary.avgAnnualCO2e ?? 0;
     const finalCarbonStockValue = summary.finalCarbonStock ?? 0;
     
-    // DIRECT APPROACH: Update the DOM elements with formatted values
-    try {
-        // Get elements directly by ID with error handling
-        const totalCO2eElement = document.getElementById('total-co2e');
-        const avgAnnualCO2eElement = document.getElementById('avg-annual-co2e');
-        const finalCarbonElement = document.getElementById('final-carbon');
-        
-        // Use direct utils access
-        if (totalCO2eElement) totalCO2eElement.textContent = utils.formatNumber(totalCO2eValue, 1);
-        if (avgAnnualCO2eElement) avgAnnualCO2eElement.textContent = utils.formatNumber(avgAnnualCO2eValue, 1);
-        if (finalCarbonElement) finalCarbonElement.textContent = utils.formatNumber(finalCarbonStockValue, 1);
-           
-        // REMOVED: Making results section visible here (done in event handler)
-        // REMOVED: Removing loading class here (done in event handler)
-        
-        console.log('Summary metrics updated directly in DOM');
-    } catch (err) {
-        console.error('Error updating summary metrics directly:', err);
-        // Removed fallback to domUtils as requested
-    }
+    // Get elements directly by ID
+    const totalCO2eElement = document.getElementById('total-co2e');
+    const avgAnnualCO2eElement = document.getElementById('avg-annual-co2e');
+    const finalCarbonElement = document.getElementById('final-carbon');
     
-    // REMOVED: Making results section visible here (done in event handler)
+    // Update values directly with proper error handling
+    if (totalCO2eElement) totalCO2eElement.textContent = utils.formatNumber(totalCO2eValue, 1);
+    if (avgAnnualCO2eElement) avgAnnualCO2eElement.textContent = utils.formatNumber(avgAnnualCO2eValue, 1);
+    if (finalCarbonElement) finalCarbonElement.textContent = utils.formatNumber(finalCarbonStockValue, 1);
 }
 
 /**
@@ -393,6 +376,24 @@ function updateBeneficiaries(beneficiaries) {
     domUtils.updateMetric('direct-beneficiaries', utils.formatNumber(beneficiaries.directBeneficiaries, 0), 0);
     domUtils.updateMetric('indirect-beneficiaries', utils.formatNumber(beneficiaries.indirectBeneficiaries, 0), 0);
     domUtils.updateMetric('total-beneficiaries', utils.formatNumber(beneficiaries.totalBeneficiaries, 0), 0);
+}
+
+/**
+ * Update green cover metrics
+ * @param {object} greenCover - Green cover metrics
+ */
+function updateGreenCover(greenCover) {
+    if (!greenCover) {
+        console.warn('No green cover data received in updateGreenCover');
+        // Optionally clear or set default values
+        domUtils.updateMetric('initial-green-cover', '-', 0);
+        domUtils.updateMetric('final-green-cover', '-', 0);
+        domUtils.updateMetric('green-cover-increase', '-', 0);
+        return;
+    }
+    domUtils.updateMetric('initial-green-cover', utils.formatNumber(greenCover.initialGreenCover, 1), 1);
+    domUtils.updateMetric('final-green-cover', utils.formatNumber(greenCover.finalGreenCover, 1), 1);
+    domUtils.updateMetric('green-cover-increase', utils.formatNumber(greenCover.greenCoverIncrease, 1), 1);
 }
 
 /**
@@ -543,12 +544,12 @@ function resetForestUI() {
     console.log('Resetting Forest UI');
     clearForestErrors();
 
-    // Clear results table - Use direct domUtils access
+    // Clear results table
     if (window.appGlobals.forest.resultsBody) {
         domUtils.clearElement(window.appGlobals.forest.resultsBody);
     }
 
-    // Clear summary metrics (optional: set to default values like '0' or '-')
+    // Clear summary metrics
     const metrics = document.querySelectorAll('#forest-summary-metrics .metric-value');
     metrics.forEach(metric => metric.textContent = '-');
 
@@ -558,23 +559,17 @@ function resetForestUI() {
         window.appGlobals.forest.sequestrationChart = null;
     }
     
-    // Explicitly clear the canvas content if destroy() doesn't always
+    // Explicitly clear the canvas content
     const chartCanvas = document.getElementById('sequestration-chart');
     if(chartCanvas) {
         const ctx = chartCanvas.getContext('2d');
         ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
     }
 
-    // --- Hide the results section on reset --- 
+    // Hide the results section on reset
     if (window.appGlobals.forest.resultsSection) {
         window.appGlobals.forest.resultsSection.style.display = 'none';
     }
-
-    // Reset enhanced sections if they have reset functions
-    // e.g., resetCostAnalysisUI(), resetCarbonCreditsUI(), etc.
-
-    // Remove loading indicator if reset is triggered during loading
-    document.body.classList.remove('loading');
 
     console.log('Forest UI reset complete');
 }
@@ -589,6 +584,7 @@ window.forestDOM = {
     updateCarbonCredits,
     updateBiodiversity,
     updateBeneficiaries,
+    updateGreenCover, // Add the new function here
     resetUI: resetForestUI,
     getLastResults: () => window.appGlobals.lastForestResults // Update getter to reference global variable
 };

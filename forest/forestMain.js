@@ -60,11 +60,12 @@ function calculateSummaryFromYearlyData(yearlyData) {
     // Get the final year for total values
     const finalYear = yearlyData[yearlyData.length - 1];
     
-    // Calculate average annual CO2e by summing all annual increments and dividing by years
+    // Calculate average annual CO2e from annual increments
     const totalYears = yearlyData.length;
     const annualCO2eSum = yearlyData.reduce((sum, year) => sum + (year.annualIncrement || 0), 0);
     const avgAnnualCO2e = totalYears > 0 ? annualCO2eSum / totalYears : 0;
     
+    // Return properly structured summary
     return {
         totalCO2e: finalYear.cumulativeCO2e || 0,
         avgAnnualCO2e: avgAnnualCO2e,

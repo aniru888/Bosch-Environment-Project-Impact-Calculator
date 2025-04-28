@@ -69,32 +69,23 @@ function setupWaterResetHandler() {
  * @param {HTMLFormElement} form - The water calculation form
  */
 function calculateWaterImpact(form) {
-    // Clear any previous errors
-    if (window.waterDOM) {
-        window.waterDOM.clearErrors();
-    }
-    
     try {
-        // Get form data
-        const formData = getFormData(form);
-        
-        // Validate form data
-        if (!formData || typeof formData !== 'object') {
-            throw new Error('Invalid form data provided');
+        // Check if event system is available
+        if (!window.waterCalcs || !window.waterCalcs.eventSystem) {
+            throw new Error('Water event system not initialized');
         }
 
-        // Ensure required numeric fields exist and are valid numbers
-        const requiredNumericFields = ['rainFall', 'runoffCoefficient', 'captureEfficiency', 'waterProjectCost', 'waterValue'];
-        for (const field of requiredNumericFields) {
-            if (formData[field] === undefined || formData[field] === null || isNaN(Number(formData[field]))) {
-                throw new Error(`${field} is required and must be a valid number`);
-            }
-        }
+        // Parse form data
+        const formData = window.waterIO.parseFormData(form);
         
-        // Calculate water capture
+        // Validate data
+        if (!validateData(formData)) {
+            throw new Error('Invalid form data');
+        }
+
+        // Perform calculations
         const results = window.waterCalcs.calculateWaterCapture(formData);
         
-        // Validate calculation results
         if (!results || !results.summary || typeof results.summary.totalWaterKL === 'undefined') {
             throw new Error('Invalid calculation results');
         }
@@ -140,8 +131,6 @@ function calculateWaterImpact(form) {
     } catch (error) {
         console.error('Error calculating water impact:', error);
         handleError(`Calculation error: ${error.message}`);
-        // Remove loading indicator on error
-        document.body.classList.remove('loading');
         return null;
     }
 }

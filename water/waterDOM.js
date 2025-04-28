@@ -116,7 +116,6 @@ function setupFormSubmitHandler() {
 
             // Call calculateWaterImpact with form data
             window.waterMain.calculate(formData);
-            document.body.classList.add('loading');
         });
     }
 }
@@ -189,9 +188,6 @@ function displayWaterResults(results) {
     
     // Update the results table
     updateResultsTable(results.yearly);
-
-    // Remove loading indicator AFTER results are displayed
-    document.body.classList.remove('loading');
 }
 
 /**
@@ -403,9 +399,6 @@ function resetWaterUI() {
 
     // Reset summary metrics (optional)
     // updateSummaryMetrics({ annualWaterCaptured: 0, totalWaterCaptured: 0, annualEnergySaved: 0, annualEmissionsReduction: 0, totalEmissionsReduction: 0 });
-
-    // Remove loading indicator if reset is triggered during loading
-    document.body.classList.remove('loading');
 }
 
 // Export functions via window object

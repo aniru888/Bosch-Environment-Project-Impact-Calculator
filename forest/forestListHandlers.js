@@ -79,9 +79,6 @@ function handleForestFormSubmit(event) {
     // Prevent default form submission
     event.preventDefault();
 
-    // Add loading indicator
-    document.body.classList.add('loading');
-
     // Clear previous errors
     window.forestDOM.clearErrors();
 

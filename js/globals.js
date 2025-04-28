@@ -148,8 +148,6 @@ console.log('Global namespaces and initialization functions defined');
 
 // Add DOMContentLoaded listener for initialization
 document.addEventListener('DOMContentLoaded', () => {
-    // REMOVED: Loading state addition
-    // document.body.classList.add('loading'); 
     console.log('DOM loaded, checking modules...');
 
     // Check modules immediately
@@ -159,7 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Initialize event systems
         if (!window.initializeEventSystems()) {
             console.error('Failed to initialize event systems');
-            // REMOVED: Loading state removal on error
             return; // Stop initialization
         }
         console.log('Event systems initialized');
@@ -172,16 +169,10 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('AppMain initialized successfully.');
         } catch (error) {
             console.error('Fatal error during application initialization:', error);
-            // Optionally show an error message to the user here
-            // REMOVED: Loading state removal in catch block (no longer needed)
         }
         
-        // REMOVED: Loading state removal after initialization
         console.log('Initialization complete.');
-
     } else {
         console.error('Failed to initialize application: missing required modules');
-        // Show error message to user or handle appropriately
-        // REMOVED: Loading state removal on error
     }
 });
