@@ -128,7 +128,8 @@ function handleFormSubmit(event) {
     if (window.forestMain && window.forestMain.calculateForest) {
         window.forestMain.calculateForest(formData);
     }
-    document.body.classList.add('loading');
+    // Immediately make the results section visible
+    window.appGlobals.forest.resultsSection.style.display = 'block';
 }
 
 /**
@@ -188,6 +189,8 @@ function registerEventHandlers() {
         if (!safeResults) return; // Stop if integrity check fails
 
         // Call all necessary update functions based on the received results
+        // Ensure the results section is visible
+        window.appGlobals.forest.resultsSection.style.display = 'block';
         displayForestResults(safeResults); // Handles summary, table, chart
 
         // Update enhanced sections using data from the results object
@@ -274,7 +277,8 @@ function displayForestResults(results) {
     // These are now handled by the event listener in registerEventHandlers
 
     // Remove loading indicator AFTER results are displayed
-    document.body.classList.remove('loading');
+        // Remove loading indicator AFTER results are displayed
+    
 }
 
 /**
@@ -303,9 +307,12 @@ function updateSummaryMetrics(summary) {
         const finalCarbonElement = document.getElementById('final-carbon');
         
         // Use direct utils access
-        if (totalCO2eElement) totalCO2eElement.textContent = utils.formatNumber(totalCO2eValue, 2);
-        if (avgAnnualCO2eElement) avgAnnualCO2eElement.textContent = utils.formatNumber(avgAnnualCO2eValue, 2);
-        if (finalCarbonElement) finalCarbonElement.textContent = utils.formatNumber(finalCarbonStockValue, 2);
+        if (totalCO2eElement) totalCO2eElement.textContent = utils.formatNumber(totalCO2eValue, 1);
+        if (avgAnnualCO2eElement) avgAnnualCO2eElement.textContent = utils.formatNumber(avgAnnualCO2eValue, 1);
+        if (finalCarbonElement) finalCarbonElement.textContent = utils.formatNumber(finalCarbonStockValue, 1);
+           // Make sure the results section is visible
+        window.appGlobals.forest.resultsSection.style.display = 'block';
+        document.body.classList.remove('loading');
         
         console.log('Summary metrics updated directly in DOM');
     } catch (err) {
@@ -325,11 +332,11 @@ function updateSummaryMetrics(summary) {
  * @param {object} costAnalysis - Cost analysis results
  */
 function updateCostAnalysis(costAnalysis) {
-    domUtils.updateMetric('cost-per-tonne', costAnalysis.costPerTonne, 2);
-    domUtils.updateMetric('cost-per-hectare', costAnalysis.costPerHectare, 0);
-    domUtils.updateMetric('establishment-cost', costAnalysis.establishmentCost, 0);
-    domUtils.updateMetric('maintenance-cost', costAnalysis.maintenanceCost, 0);
-    domUtils.updateMetric('monitoring-cost', costAnalysis.monitoringCost, 0);
+    domUtils.updateMetric('cost-per-tonne', utils.formatNumber(costAnalysis.costPerTonne, 2), 2);
+    domUtils.updateMetric('cost-per-hectare', utils.formatNumber(costAnalysis.costPerHectare, 0), 0);
+    domUtils.updateMetric('establishment-cost', utils.formatNumber(costAnalysis.establishmentCost, 0), 0);
+    domUtils.updateMetric('maintenance-cost', utils.formatNumber(costAnalysis.maintenanceCost, 0), 0);
+    domUtils.updateMetric('monitoring-cost', utils.formatNumber(costAnalysis.monitoringCost, 0), 0);
 }
 
 /**
@@ -342,9 +349,9 @@ function updateCarbonCredits(totalCO2e, carbonPrice, riskBuffer = 20) {
     const creditsAfterBuffer = totalCO2e * (1 - riskBuffer / 100);
     const revenue = creditsAfterBuffer * carbonPrice;
     
-    domUtils.updateMetric('carbon-credits', creditsAfterBuffer, 0);
-    domUtils.updateMetric('carbon-revenue', revenue, 0);
-    domUtils.updateMetric('risk-buffer', riskBuffer, 0);
+    domUtils.updateMetric('carbon-credits', utils.formatNumber(creditsAfterBuffer, 0), 0);
+    domUtils.updateMetric('carbon-revenue', utils.formatNumber(revenue, 0), 0);
+    domUtils.updateMetric('risk-buffer', utils.formatNumber(riskBuffer, 0), 0);
 }
 
 /**
@@ -352,10 +359,10 @@ function updateCarbonCredits(totalCO2e, carbonPrice, riskBuffer = 20) {
  * @param {object} biodiversity - Biodiversity metrics
  */
 function updateBiodiversity(biodiversity) {
-    domUtils.updateMetric('biodiversity-index', biodiversity.biodiversityIndex, 1);
-    domUtils.updateMetric('species-count', biodiversity.speciesCount, 0);
-    domUtils.updateMetric('habitat-creation', biodiversity.habitatCreation, 0);
-    domUtils.updateMetric('species-supported', biodiversity.potentialSpeciesSupported, 0);
+    domUtils.updateMetric('biodiversity-index', utils.formatNumber(biodiversity.biodiversityIndex, 1), 1);
+    domUtils.updateMetric('species-count', utils.formatNumber(biodiversity.speciesCount, 0), 0);
+    domUtils.updateMetric('habitat-creation', utils.formatNumber(biodiversity.habitatCreation, 0), 0);
+    domUtils.updateMetric('species-supported', utils.formatNumber(biodiversity.potentialSpeciesSupported, 0), 0);
 }
 
 /**
@@ -363,9 +370,9 @@ function updateBiodiversity(biodiversity) {
  * @param {object} beneficiaries - Beneficiaries metrics
  */
 function updateBeneficiaries(beneficiaries) {
-    domUtils.updateMetric('direct-beneficiaries', beneficiaries.directBeneficiaries, 0);
-    domUtils.updateMetric('indirect-beneficiaries', beneficiaries.indirectBeneficiaries, 0);
-    domUtils.updateMetric('total-beneficiaries', beneficiaries.totalBeneficiaries, 0);
+    domUtils.updateMetric('direct-beneficiaries', utils.formatNumber(beneficiaries.directBeneficiaries, 0), 0);
+    domUtils.updateMetric('indirect-beneficiaries', utils.formatNumber(beneficiaries.indirectBeneficiaries, 0), 0);
+    domUtils.updateMetric('total-beneficiaries', utils.formatNumber(beneficiaries.totalBeneficiaries, 0), 0);
 }
 
 /**
@@ -378,14 +385,14 @@ function updateForestResultsTable(yearlyData) {
     
     // Add rows for each year
     yearlyData.forEach(data => {
-        // Ensure numeric values first, then format for display
-        const yearValue = data.year || 0;
-        const survivingTreesValue = Math.round(data.survivingTrees || 0);
-        const growingStockValue = data.growingStock || 0;
-        const carbonContentValue = data.carbonContent || 0;
-        const co2eValue = data.co2e || 0;
-        const annualIncrementValue = data.annualIncrement || 0;
-        const cumulativeCO2eValue = data.cumulativeCO2e || 0;
+         // Ensure numeric values first, then format for display
+        const yearValue = utils.formatNumber(data.year || 0, 0);
+        const survivingTreesValue = utils.formatNumber(Math.round(data.survivingTrees || 0), 0);
+        const growingStockValue = utils.formatNumber(data.growingStock || 0, 1);
+        const carbonContentValue = utils.formatNumber(data.carbonContent || 0, 1);
+        const co2eValue = utils.formatNumber(data.co2e || 0, 1);
+        const annualIncrementValue = utils.formatNumber(data.annualIncrement || 0, 1);
+        const cumulativeCO2eValue = utils.formatNumber(data.cumulativeCO2e || 0, 1);
 
         // Format values for display - Use direct utils and domUtils access
         const row = domUtils.createTableRow([
@@ -525,10 +532,10 @@ function resetForestUI() {
         window.appGlobals.forest.sequestrationChart = null;
     }
 
-    // Hide results section (optional, could just leave it empty)
-    // if (window.appGlobals.forest.resultsSection) {
-    //     window.appGlobals.forest.resultsSection.style.display = 'none'; // Hide it directly
-    // }
+    // Make the results section visible
+    if (window.appGlobals.forest.resultsSection) {
+        window.appGlobals.forest.resultsSection.style.display = 'block';
+    }
 
     // Reset enhanced sections if they have reset functions
     // e.g., resetCostAnalysisUI(), resetCarbonCreditsUI(), etc.

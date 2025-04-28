@@ -157,10 +157,9 @@ function calculateBeneficiaries(inputs) {
  * @param {Array} yearlyData - Yearly data for calculations
  * @param {Object} summary - Summary results for calculations
  * @param {Object} formData - Project inputs
- * @param {Array} speciesData - Species data for multi-species mode
  */
 function calculateEnhancedFeatures(yearlyData, summary, formData) {
-    // Extract inputs from formData
+     // Extract inputs from formData
     const { area, plantingDensity, mortalityRate, projectDuration } = formData;
 
     // Ensure data integrity: use default if data is missing or invalid
@@ -192,20 +191,6 @@ function calculateEnhancedFeatures(yearlyData, summary, formData) {
     // Return calculated data
     return { biodiversityIndex, speciesCount, habitatCreation, speciesSupported: potentialSpeciesSupported, initialGreenCover: greenCoverAndCredits.calculateInitialGreenCover(), finalGreenCover, greenCoverIncrease: finalGreenCover - greenCoverAndCredits.calculateInitialGreenCover(), directBeneficiaries, indirectBeneficiaries, totalBeneficiaries };
 }
-    
-    // Calculate and update biodiversity metrics
-    const biodiversity = calculateBiodiversityEnhancement(inputs, speciesData);
-    const biodiversitySection = document.getElementById('biodiversity-section');
-    if (biodiversitySection) {
-        forestDOM.updateBiodiversity(biodiversity);
-    }
-    
-    // Calculate and update beneficiaries metrics
-    const beneficiaries = calculateBeneficiaries(inputs);
-    const beneficiariesSection = document.getElementById('beneficiaries-section');
-    if (beneficiariesSection) {
-        forestDOM.updateBeneficiaries(beneficiaries);
-    }
 
 // Export functions
 window.forestEnhanced = {

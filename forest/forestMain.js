@@ -140,13 +140,9 @@ function calculateForest(formData) {
         if (window.forestEnhanced && results.yearly && results.yearly.length > 0) {
             const yearlyData = results.yearly;
             const {
-                area,
-                projectDuration,
-                plantingDensity,
-                growthRate
+                
             } = formData
-            const params = [projectDuration, plantingDensity, growthRate];
-            const enhancedData = window.forestEnhanced.calculateEnhancedFeatures(yearlyData, ...params);
+            const enhancedData = window.forestEnhanced.calculateEnhancedFeatures(yearlyData, results.summary, formData);
             biodiversityIndex = enhancedData.biodiversityIndex ?? 0;
             speciesCount = enhancedData.speciesCount ?? 0;
             habitatCreation = enhancedData.habitatCreation ?? 0;
