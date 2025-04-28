@@ -145,3 +145,8 @@ body.loading::after {
     color: #333;
     z-index: 9999; /* Above the overlay */
 }
+
+/* results-section styles */
+.results-section {
+    display: block;
+}

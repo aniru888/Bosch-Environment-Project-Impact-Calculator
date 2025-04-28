@@ -12,7 +12,6 @@ function setupGreenCoverAndCredits(speciesData) {
     // Set up variables
     let initialGreenCover = 10; // Default initial green cover percentage (assumption)
     let finalGreenCover = 0;
-    
     // Get DOM elements
     const greenCoverSection = document.getElementById('green-cover-section');
     const carbonCreditsSection = document.getElementById('carbon-credits-section');
@@ -36,6 +35,14 @@ function setupGreenCoverAndCredits(speciesData) {
         });
     }
     
+    function calculateInitialGreenCover(){
+        const results = window.forestMain?.getLastResults();
+        if (!results){
+            return initialGreenCover;
+        }
+        return initialGreenCover;
+    }
+    
     /**
      * Update green cover metrics
      * @param {Object} inputs - Project inputs
@@ -43,7 +50,7 @@ function setupGreenCoverAndCredits(speciesData) {
     function updateGreenCoverMetrics(inputs) {
         if (!greenCoverSection) return;
         
-        // Calculate final green cover based on area and planting density
+        // Calculate final green cover based on area and planting density.
         // This is a simplified model assuming each mature tree covers ~25m²
         const { area, plantingDensity, mortalityRate, projectDuration } = inputs;
         const totalPlantedTrees = area * plantingDensity;
@@ -59,7 +66,7 @@ function setupGreenCoverAndCredits(speciesData) {
         const greenCoverIncrease = finalGreenCover - initialGreenCover;
         
         // Update UI
-        domUtils.updateMetric('initial-green-cover', initialGreenCover, 1);
+        domUtils.updateMetric('initial-green-cover', calculateInitialGreenCover(), 1);
         domUtils.updateMetric('final-green-cover', finalGreenCover, 1);
         domUtils.updateMetric('green-cover-increase', greenCoverIncrease, 1);
     }
@@ -146,20 +153,45 @@ function calculateBeneficiaries(inputs) {
 }
 
 /**
- * Update all enhanced features in the UI
- * @param {Object} inputs - Project inputs
- * @param {Object} results - Calculation results
+ * Calculate all enhanced features
+ * @param {Array} yearlyData - Yearly data for calculations
+ * @param {Object} summary - Summary results for calculations
+ * @param {Object} formData - Project inputs
  * @param {Array} speciesData - Species data for multi-species mode
  */
-function updateAllEnhancedFeatures(inputs, results, speciesData) {
-    // Set up green cover and carbon credits
+function calculateEnhancedFeatures(yearlyData, summary, formData) {
+    // Extract inputs from formData
+    const { area, plantingDensity, mortalityRate, projectDuration } = formData;
+
+    // Ensure data integrity: use default if data is missing or invalid
+    const inputs = {
+        area: parseFloat(area) || 0,
+        plantingDensity: parseFloat(plantingDensity) || 0,
+        mortalityRate: parseFloat(mortalityRate) || 0,
+        projectDuration: parseFloat(projectDuration) || 0,
+    };
+
+    // Check if multi-species mode is enabled
+    const speciesData = window.forestIO.isMultiSpecies() ? window.forestIO.getSpeciesData() : [];
+
+    // Setup green cover and carbon credits management
     const greenCoverAndCredits = setupGreenCoverAndCredits(speciesData);
-    
-    // Update green cover metrics
+
+    // Update green cover metrics (before updating carbon credits)
     greenCoverAndCredits.updateGreenCoverMetrics(inputs);
-    
-    // Update carbon credits calculation
-    greenCoverAndCredits.updateCarbonCreditsCalculation(results);
+
+    // Update carbon credits (now it uses summary.totalCO2e)
+    greenCoverAndCredits.updateCarbonCreditsCalculation({ summary });
+
+    // Calculate biodiversity enhancements
+    const { biodiversityIndex, speciesCount, habitatCreation, potentialSpeciesSupported } = calculateBiodiversityEnhancement(inputs, speciesData);
+
+    // Calculate beneficiaries
+    const { directBeneficiaries, indirectBeneficiaries, totalBeneficiaries } = calculateBeneficiaries(inputs);
+
+    // Return calculated data
+    return { biodiversityIndex, speciesCount, habitatCreation, speciesSupported: potentialSpeciesSupported, initialGreenCover: greenCoverAndCredits.calculateInitialGreenCover(), finalGreenCover, greenCoverIncrease: finalGreenCover - greenCoverAndCredits.calculateInitialGreenCover(), directBeneficiaries, indirectBeneficiaries, totalBeneficiaries };
+}
     
     // Calculate and update biodiversity metrics
     const biodiversity = calculateBiodiversityEnhancement(inputs, speciesData);
@@ -174,12 +206,9 @@ function updateAllEnhancedFeatures(inputs, results, speciesData) {
     if (beneficiariesSection) {
         forestDOM.updateBeneficiaries(beneficiaries);
     }
-}
 
 // Export functions
 window.forestEnhanced = {
     setupGreenCoverAndCredits,
-    calculateBiodiversityEnhancement,
-    calculateBeneficiaries,
-    updateAllEnhancedFeatures
+    calculateEnhancedFeatures
 };

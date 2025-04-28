@@ -127,12 +127,40 @@ function calculateForest(formData) {
         results.costAnalysis = costAnalysis;
 
         // Calculate enhanced features and add them to results
-        if (window.forestEnhanced) {
-            const enhancedFeatures = window.forestEnhanced.calculateAllEnhancedFeatures(formData, results, speciesData);
-            results.biodiversity = enhancedFeatures.biodiversity;
-            results.beneficiaries = enhancedFeatures.beneficiaries;
-            // Note: Green cover and carbon credits are handled within forestDOM based on results
+        let biodiversityIndex,
+            speciesCount,
+            habitatCreation,
+            speciesSupported,
+            initialGreenCover,
+            finalGreenCover,
+            greenCoverIncrease,
+            directBeneficiaries,
+            indirectBeneficiaries,
+            totalBeneficiaries;
+        if (window.forestEnhanced && results.yearly && results.yearly.length > 0) {
+            const yearlyData = results.yearly;
+            const {
+                area,
+                projectDuration,
+                plantingDensity,
+                growthRate
+            } = formData
+            const params = [projectDuration, plantingDensity, growthRate];
+            const enhancedData = window.forestEnhanced.calculateEnhancedFeatures(yearlyData, ...params);
+            biodiversityIndex = enhancedData.biodiversityIndex ?? 0;
+            speciesCount = enhancedData.speciesCount ?? 0;
+            habitatCreation = enhancedData.habitatCreation ?? 0;
+            speciesSupported = enhancedData.speciesSupported ?? 0;
+            initialGreenCover = enhancedData.initialGreenCover ?? 0;
+            finalGreenCover = enhancedData.finalGreenCover ?? 0;
+            greenCoverIncrease = enhancedData.greenCoverIncrease ?? 0;
+            directBeneficiaries = enhancedData.directBeneficiaries ?? 0;
+            indirectBeneficiaries = enhancedData.indirectBeneficiaries ?? 0;
+            totalBeneficiaries = enhancedData.totalBeneficiaries ?? 0;
         }
+        results.biodiversity = {biodiversityIndex, speciesCount, habitatCreation, speciesSupported};
+        results.greenCover = {initialGreenCover, finalGreenCover, greenCoverIncrease};
+        results.beneficiaries = {directBeneficiaries, indirectBeneficiaries, totalBeneficiaries};
 
         // Display diagnostics
         console.log('Final results structure for event:', results);
