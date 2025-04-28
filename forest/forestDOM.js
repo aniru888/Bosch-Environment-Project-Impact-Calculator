@@ -128,8 +128,8 @@ function handleFormSubmit(event) {
     if (window.forestMain && window.forestMain.calculateForest) {
         window.forestMain.calculateForest(formData);
     }
-    // Immediately make the results section visible
-    window.appGlobals.forest.resultsSection.style.display = 'block';
+    // Do NOT immediately make results visible here. Let the 'results' event handle it.
+    // window.appGlobals.forest.resultsSection.style.display = 'block';
 }
 
 /**
@@ -175,6 +175,10 @@ function registerEventHandlers() {
     window.forestCalcs.eventSystem.on('error', ({ message, element }) => {
         console.log('Error event received:', message);
         showForestError(message, element);
+        // Hide results section on error
+        if (window.appGlobals.forest.resultsSection) {
+            window.appGlobals.forest.resultsSection.style.display = 'none';
+        }
     });
     
     // Register results handler
@@ -182,15 +186,33 @@ function registerEventHandlers() {
         console.log('Results event received in forestDOM:', results);
         if (!results) {
             console.error('Received empty results');
+            showForestError('Calculation produced no results.'); // Show error
+            if (window.appGlobals.forest.resultsSection) { // Hide results section
+                 window.appGlobals.forest.resultsSection.style.display = 'none';
+            }
             return;
         }
+        
         // Ensure results integrity (creates a safe copy)
         const safeResults = _ensureResultsIntegrity(results);
-        if (!safeResults) return; // Stop if integrity check fails
+        if (!safeResults) { // Stop if integrity check fails
+            showForestError('Received invalid results data.'); // Show error
+            if (window.appGlobals.forest.resultsSection) { // Hide results section
+                 window.appGlobals.forest.resultsSection.style.display = 'none';
+            }
+            return; 
+        }
 
-        // Call all necessary update functions based on the received results
-        // Ensure the results section is visible
-        window.appGlobals.forest.resultsSection.style.display = 'block';
+        // --- Make the results section visible FIRST --- 
+        if (window.appGlobals.forest.resultsSection) {
+            window.appGlobals.forest.resultsSection.style.display = 'block';
+        } else {
+            console.error('Cannot display results: Results section element not found.');
+            return; // Don't proceed if the main container is missing
+        }
+        // --- Now populate the visible section --- 
+
+        clearForestErrors(); // Clear any previous errors
         displayForestResults(safeResults); // Handles summary, table, chart
 
         // Update enhanced sections using data from the results object
@@ -209,6 +231,9 @@ function registerEventHandlers() {
         if (safeResults.beneficiaries) {
             updateBeneficiaries(safeResults.beneficiaries);
         }
+        
+        // Remove loading indicator AFTER results are processed
+        document.body.classList.remove('loading');
     });
     
     // Register reset handler
@@ -254,15 +279,16 @@ function clearForestErrors() {
 function displayForestResults(results) {
     // REMOVED: _ensureResultsIntegrity call (done in event handler)
     // REMOVED: window.appGlobals.lastForestResults = results; (done in forestMain)
+    // REMOVED: Making resultsSection visible (done in event handler)
 
     if (!results) {
-        console.error('No results to display');
-        showForestError('Calculation failed or produced no results.');
+        console.error('No results to display in displayForestResults');
+        // Error shown and section hidden by the event handler
         return;
     }
 
     console.log('Displaying forest results (core):', results);
-    clearForestErrors(); // Clear previous errors
+    // REMOVED: clearForestErrors(); (done in event handler)
 
     // Update summary metrics
     updateSummaryMetrics(results.summary);
@@ -276,9 +302,7 @@ function displayForestResults(results) {
     // REMOVED: Calls to updateCostAnalysis, updateCarbonCredits, updateBiodiversity, updateBeneficiaries
     // These are now handled by the event listener in registerEventHandlers
 
-    // Remove loading indicator AFTER results are displayed
-        // Remove loading indicator AFTER results are displayed
-    
+    // REMOVED: Removing loading indicator (done in event handler)
 }
 
 /**
@@ -310,9 +334,9 @@ function updateSummaryMetrics(summary) {
         if (totalCO2eElement) totalCO2eElement.textContent = utils.formatNumber(totalCO2eValue, 1);
         if (avgAnnualCO2eElement) avgAnnualCO2eElement.textContent = utils.formatNumber(avgAnnualCO2eValue, 1);
         if (finalCarbonElement) finalCarbonElement.textContent = utils.formatNumber(finalCarbonStockValue, 1);
-           // Make sure the results section is visible
-        window.appGlobals.forest.resultsSection.style.display = 'block';
-        document.body.classList.remove('loading');
+           
+        // REMOVED: Making results section visible here (done in event handler)
+        // REMOVED: Removing loading class here (done in event handler)
         
         console.log('Summary metrics updated directly in DOM');
     } catch (err) {
@@ -320,11 +344,7 @@ function updateSummaryMetrics(summary) {
         // Removed fallback to domUtils as requested
     }
     
-    // Optional: Make the results section visible if it's hidden
-    const resultsSection = document.getElementById('forest-results');
-    if (resultsSection) {
-        resultsSection.style.display = 'block';
-    }
+    // REMOVED: Making results section visible here (done in event handler)
 }
 
 /**
@@ -418,7 +438,10 @@ function createSequestrationChart(results, chartElementId) {
     // Get the chart canvas element
     const chartElement = document.getElementById(chartElementId);
     console.log('Chart element found:', !!chartElement, chartElementId); // Debug
-    if (!chartElement) return;
+    if (!chartElement) {
+         console.error('Cannot create chart: Chart canvas element not found.');
+         return;
+    }
     
     // Check if Chart.js is available
     if (!window.Chart) {
@@ -429,6 +452,7 @@ function createSequestrationChart(results, chartElementId) {
     // Destroy existing chart if it exists
     if (window.appGlobals.forest.sequestrationChart) {
         window.appGlobals.forest.sequestrationChart.destroy();
+        window.appGlobals.forest.sequestrationChart = null; // Clear reference
     }
     
     // Set proper chart dimensions
@@ -442,7 +466,7 @@ function createSequestrationChart(results, chartElementId) {
     
     // Prepare data with safety checks
     const years = results.yearly.map(data => `Year ${data.year || 0}`);
-    const co2eData = results.yearly.map(data => data.co2e || 0);
+    const co2eData = results.yearly.map(data => data.cumulativeCO2e || 0); // Changed to cumulative for primary axis
     const annualIncrementData = results.yearly.map(data => data.annualIncrement || 0);
     
     console.log('Chart data prepared:', {years, co2eData, annualIncrementData}); // Debug
@@ -486,7 +510,8 @@ function createSequestrationChart(results, chartElementId) {
                         title: {
                             display: true,
                             text: 'Cumulative CO₂e (tonnes)'
-                        }
+                        },
+                        beginAtZero: true // Ensure Y-axis starts at 0
                     },
                     y1: {
                         type: 'linear',
@@ -498,7 +523,8 @@ function createSequestrationChart(results, chartElementId) {
                         },
                         grid: {
                             drawOnChartArea: false
-                        }
+                        },
+                        beginAtZero: true // Ensure Y-axis starts at 0
                     }
                 }
             }
@@ -506,6 +532,7 @@ function createSequestrationChart(results, chartElementId) {
         console.log('Chart created successfully');
     } catch (err) {
         console.error('Error creating chart:', err);
+        // Optionally display an error message in the UI near the chart
     }
 }
 
@@ -526,15 +553,21 @@ function resetForestUI() {
     metrics.forEach(metric => metric.textContent = '-');
 
     // Clear chart
-    const chartCanvas = document.getElementById('forest-sequestration-chart');
-    if (chartCanvas && window.appGlobals.forest.sequestrationChart) {
+    if (window.appGlobals.forest.sequestrationChart) {
         window.appGlobals.forest.sequestrationChart.destroy();
         window.appGlobals.forest.sequestrationChart = null;
     }
+    
+    // Explicitly clear the canvas content if destroy() doesn't always
+    const chartCanvas = document.getElementById('sequestration-chart');
+    if(chartCanvas) {
+        const ctx = chartCanvas.getContext('2d');
+        ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+    }
 
-    // Make the results section visible
+    // --- Hide the results section on reset --- 
     if (window.appGlobals.forest.resultsSection) {
-        window.appGlobals.forest.resultsSection.style.display = 'block';
+        window.appGlobals.forest.resultsSection.style.display = 'none';
     }
 
     // Reset enhanced sections if they have reset functions
