@@ -39,6 +39,9 @@ function initWaterDOM(options = {}) {
     // Register DOM callbacks with event system
     registerEventHandlers();
 
+    // Set up form submit handler
+    setupFormSubmitHandler();
+
     // Debug log to confirm initialization
     console.log('Water DOM module initialized, event handlers registered');
 }
@@ -90,6 +93,32 @@ function validateInput(input) {
     // Clear error if valid
     clearWaterErrors();
     return true;
+}
+
+/**
+ * Set up form submit handler
+ */
+function setupFormSubmitHandler() {
+    const form = window.appGlobals.water.form;
+    if (form) {
+        form.addEventListener('submit', (event) => {
+            event.preventDefault(); // Prevent default form submission
+
+            // Read form data
+            const formData = {};
+            const formElements = form.elements;
+            for (let i = 0; i < formElements.length; i++) {
+                const element = formElements[i];
+                if (element.name) {
+                    formData[element.name] = element.value;
+                }
+            }
+
+            // Call calculateWaterImpact with form data
+            window.waterMain.calculate(formData);
+            document.body.classList.add('loading');
+        });
+    }
 }
 
 /**

@@ -70,6 +70,9 @@ function initForestDOM(options = {}) {
     // Register DOM callbacks with event system
     registerEventHandlers();
 
+    // Set up form submission handler
+    setupFormSubmissionHandler();
+
     // Debug log to confirm initialization
     console.log('Forest DOM module initialized, event handlers registered');
     return true;
@@ -94,6 +97,38 @@ function setupFormValidation(form) {
             validateInput(input);
         });
     });
+}
+
+/**
+ * Set up form submission handler
+ */
+function setupFormSubmissionHandler() {
+    const form = window.appGlobals.forest.form;
+    if (form) {
+        form.addEventListener('submit', handleFormSubmit);
+    }
+}
+
+/**
+ * Handle form submission
+ * @param {Event} event - Submit event from form
+ */
+function handleFormSubmit(event) {
+    event.preventDefault(); // Prevent default form submission behavior
+    console.log('Forest form submitted');
+    
+    // Read form data
+    const formData = {};
+    const inputs = window.appGlobals.forest.form.querySelectorAll('input, select');
+    inputs.forEach(input => {
+        formData[input.name] = input.value;
+    });
+    
+    // Call calculateForest with form data
+    if (window.forestMain && window.forestMain.calculateForest) {
+        window.forestMain.calculateForest(formData);
+    }
+    document.body.classList.add('loading');
 }
 
 /**

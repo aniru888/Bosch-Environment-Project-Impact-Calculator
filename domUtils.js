@@ -76,13 +76,12 @@ const domUtils = {
      * @param {number} decimals - The number of decimal places
      */
     updateMetric(elementId, value, decimals = 0) {
-        const element = document.getElementById(elementId);
-        if (element) {
-            console.log(`[domUtils.updateMetric] Found element #${elementId}, setting value:`, value, 'decimals:', decimals);
-            element.textContent = utils.formatNumber(value, decimals);
-        } else {
-            console.warn(`[domUtils.updateMetric] Element with ID "${elementId}" not found at update time! Value:`, value);
+      const element = document.getElementById(elementId);
+      if (!element) {
+          console.error(`[domUtils.updateMetric] Element with ID "${elementId}" not found!`);
+          return;
         }
+        element.textContent = utils.formatNumber(value, decimals);
     },
     
     /**
